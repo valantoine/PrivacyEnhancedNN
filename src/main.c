@@ -43,10 +43,11 @@ int main(void)
     int_matrix_free(&v1);
     int_matrix_free(&v2);
     int_matrix_free(&v3);
-    train_dataset_t *train_dataset = train_read_files(IMAGES_TRAIN_PATH, LABELS_TRAIN_PATH);
-    train_data_print(train_dataset, 4, stdout);
-    free(train_dataset);
-    test_dataset_t *test_dataset = test_read_files(IMAGES_TEST_PATH, LABELS_TEST_PATH);
-    test_data_print(test_dataset, 4, stdout);
-    free(test_dataset);
+    dataset_t *train_dataset = dataset_read(IMAGES_TRAIN_PATH, LABELS_TRAIN_PATH, TRAIN_SIZE);
+    //image_print(&train_dataset->images[1], stdout);
+    train(train_dataset);
+    dataset_free(train_dataset);
+    // test_dataset_t *test_dataset = test_read_files(IMAGES_TEST_PATH, LABELS_TEST_PATH);
+    // test_data_print(test_dataset, 4, stdout);
+    // free(test_dataset);
 }

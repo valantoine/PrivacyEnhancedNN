@@ -10,25 +10,24 @@
 #define IMAGE_HEIGHT 28
 #define IMAGE_SIZE 784
 
-typedef struct{
-    float images[TRAIN_SIZE][IMAGE_SIZE];
-    uint8_t label[TRAIN_SIZE];
-} train_dataset_t;
 
 typedef struct{
-    float images[TEST_SIZE][IMAGE_SIZE];
-    uint8_t label[TEST_SIZE];
-} test_dataset_t;
+    float image[IMAGE_SIZE];
+    uint8_t label;
+} image_t;
+
+typedef struct{
+    image_t *images;
+    size_t size;
+} dataset_t;
 
 
+extern void image_print(image_t *image, FILE *fd);
 
+extern dataset_t *dataset_read(const char *images, const char *labels, size_t size);
 
-extern train_dataset_t *train_read_files(const char *images, const char *labels);
+extern void dataset_free(dataset_t *dataset);
 
-extern void train_data_print(train_dataset_t *dataset, int i, FILE *fd);
-
-extern test_dataset_t *test_read_files(const char *images, const char *labels);
-
-extern void test_data_print(test_dataset_t *dataset, int i, FILE *fd);
+extern dataset_t *dataset_alloc(size_t size);
 
 #endif /*PREPROCESS_DATA_H*/
