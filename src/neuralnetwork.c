@@ -174,7 +174,6 @@ void back_propagation(const in_matrix_t *output, const dataset_t *dataset, const
         gradients->db2[j] /= dataset->size;
     }
 
-
     // Computing dZ1 = W2.transpose * dZ2 and every elements multiplied by ReLU'(Z1)
     for (size_t k = 0; k < dataset->size; k++)
     {
@@ -287,32 +286,59 @@ float accuracy(const dataset_t *dataset, const in_matrix_t *output)
     return temp_sum / dataset->size;
 }
 
-void train(const dataset_t *dataset)
+void train(dataset_t *dataset, parameters_t *parameters)
 {
-    parameters_t *parameters = init_parameters();
     in_matrix_t output;
-    output.vectors = malloc(dataset->size * sizeof(in_vector_t));
+    output.vectors = malloc(BATCH_SIZE * sizeof(in_vector_t));
     back_matrix_t back_parameters;
-    back_parameters.vectors = malloc(dataset->size * sizeof(back_vector_t));
+    back_parameters.vectors = malloc(BATCH_SIZE * sizeof(back_vector_t));
+    in_matrix_t output_all;
+    output_all.vectors = malloc(dataset->size * sizeof(in_vector_t));
     gradients_t *gradients = malloc(sizeof(gradients_t));
     if (gradients == NULL)
     {
         fprintf(stderr, "Could not allocate");
         exit(EXIT_FAILURE);
     }
-    for (int i = 0; i < 500; i++)
+    size_t nb_batches = dataset->size / BATCH_SIZE;
+
+    image_t *original_image = dataset->images; // Keep address of the images array
+    size_t original_size = dataset->size;
+
+    for (int epoch = 0; epoch < NB_EPOCHS; epoch++)
     {
+        dataset_shuffle(dataset);
+
+        for (size_t b = 0; b < nb_batches; b++)
+        {
+            // Temporary modification to keep only a batch in dataset
+            dataset->images = original_image + b * BATCH_SIZE;
+            dataset->size = BATCH_SIZE;
+            feed_forward(&output, parameters, dataset);
+            memset(gradients, 0, sizeof(gradients_t));
+            memset(back_parameters.vectors, 0, dataset->size * sizeof(back_vector_t));
+            back_propagation(&output, dataset, parameters, &back_parameters, gradients); // Changer la def pour opti
+            stochastich_gradient_descent(parameters, gradients);
+        }
+
+        // Remainder
+        dataset->images = original_image + nb_batches * BATCH_SIZE;
+        dataset->size = (original_size % BATCH_SIZE);
         feed_forward(&output, parameters, dataset);
-
-        fprintf(stdout, "Iteration %d : accuracy : %f\n", i, accuracy(dataset, &output));
-
         memset(gradients, 0, sizeof(gradients_t));
         memset(back_parameters.vectors, 0, dataset->size * sizeof(back_vector_t));
         back_propagation(&output, dataset, parameters, &back_parameters, gradients); // Changer la def pour opti
         stochastich_gradient_descent(parameters, gradients);
+
+        // Restore original image adress
+        dataset->images = original_image;
+        dataset->size = original_size;
+        feed_forward(&output_all, parameters, dataset);
+        fprintf(stdout, "Epoch %d | accuracy : %f\n", epoch , accuracy(dataset, &output_all));
+        
     }
+    free(output_all.vectors);    
     free(gradients);
     free(back_parameters.vectors);
     free(output.vectors);
-    free(parameters);
 }

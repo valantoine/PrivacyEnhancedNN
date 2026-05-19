@@ -98,7 +98,7 @@ dataset_t *dataset_read(const char *images, const char *labels, size_t size)
         dataset_free(dataset);
         return NULL;
     }
-    //Copying labels
+    // Copying labels
     for (size_t i = 0; i < size; i++)
     {
         if (fread(&dataset->images[i].label, 1, 1, stream) != 1)
@@ -176,7 +176,7 @@ dataset_t *dataset_read(const char *images, const char *labels, size_t size)
         dataset_free(dataset);
         return NULL;
     }
-    //Copying image and normalization
+    // Copying image and normalization
     for (size_t i = 0; i < size; i++)
     {
         if (1 != fread(raw, sizeof(raw), 1, stream))
@@ -206,9 +206,28 @@ void image_print(image_t *image, FILE *fd)
         {
             fprintf(fd, "\n");
         }
-        fprintf(fd, "%f ", image->image[j]);
+        if (image->image[j] != 0.0)
+        {
+            fprintf(fd, "*");
+        }
+        else
+        {
+            fprintf(fd, " ");
+        }
     }
     fprintf(fd, "\n");
 }
 
-
+void dataset_shuffle(dataset_t *dataset)
+{
+    if (dataset->size > 1)
+    {
+        for (size_t i = 0; i < dataset->size - 1; i++)
+        {
+            size_t j = i + rand() / (RAND_MAX / (dataset->size - i) + 1);
+            image_t temp = dataset->images[i];
+            dataset->images[i] = dataset->images[j];
+            dataset->images[j] = temp;
+        }
+    }
+}

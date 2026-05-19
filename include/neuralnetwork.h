@@ -2,11 +2,13 @@
 #define NEURALNETWORK_H
 #include "preprocess_data.h"
 #include <math.h>
-#include <time.h>
+
 #include <string.h>
-#define NB_NEURONS 10
+#define NB_NEURONS 32
 #define NB_CLASSES 10 // Final output
 #define LEARNING_RATE 0.2
+#define NB_EPOCHS 10
+#define BATCH_SIZE 64
 
 // Used for init parameters for backpropagation
 typedef struct
@@ -50,6 +52,13 @@ typedef struct
     back_vector_t *vectors;
 } back_matrix_t;
 
-extern void train(const dataset_t *dataset);
+extern void train(dataset_t *dataset, parameters_t *parameters);
+
+extern parameters_t *init_parameters();
+
+extern void feed_forward(in_matrix_t *output, const parameters_t *parameters, const dataset_t *dataset);
+
+extern float accuracy(const dataset_t *dataset, const in_matrix_t *output);
+
 
 #endif /*NEURALNETWORK_H*/

@@ -1,6 +1,8 @@
 #ifndef PREPROCESS_DATA_H
 #define PREPROCESS_DATA_H
 #include "lin_algebra_misc.h"
+#include <time.h>
+
 
 #define LABEL_MAGIC 0x00000801
 #define IMAGE_MAGIC 0x00000803
@@ -29,5 +31,7 @@ extern dataset_t *dataset_read(const char *images, const char *labels, size_t si
 extern void dataset_free(dataset_t *dataset);
 
 extern dataset_t *dataset_alloc(size_t size);
+
+extern void dataset_shuffle(dataset_t *dataset);
 
 #endif /*PREPROCESS_DATA_H*/
