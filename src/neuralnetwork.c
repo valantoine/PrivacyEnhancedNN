@@ -122,91 +122,110 @@ float relu_deriv(const float f)
     }
 }
 
-gradients_t *back_propagation(const in_matrix_t *output, const dataset_t *dataset, const parameters_t *parameters, back_matrix_t *back_parameters)
+void back_propagation(const in_matrix_t *output, const dataset_t *dataset, const parameters_t *parameters, back_matrix_t *back_parameters, gradients_t *gradients)
 {
-    gradients_t *gradients = malloc(sizeof(gradients_t));
-    if (gradients == NULL)
-    {
-        fprintf(stderr, "Could not allocate");
-        return NULL;
-    }
-    float temp_mult;
-    float temp_sum;
     // Computing dZ2 (can be done more efficiently)
-    for (size_t i = 0; i < dataset->size; i++)
+    for (size_t k = 0; k < dataset->size; k++)
     {
         for (int j = 0; j < NB_CLASSES; j++)
         {
 
-            if (j == dataset->images[i].label)
+            if (j == dataset->images[k].label)
             {
-                back_parameters->vectors[i].dZ2[j] = output->vectors[i].A2[j] - 1;
+                back_parameters->vectors[k].dZ2[j] = output->vectors[k].A2[j] - 1;
             }
             else
             {
-                back_parameters->vectors[i].dZ2[j] = output->vectors[i].A2[j];
+                back_parameters->vectors[k].dZ2[j] = output->vectors[k].A2[j];
             }
         }
     }
 
-    // Computing dW2 = dZ2 * A1.transpose / size and db2 = sum of dZ2 rows / size
-    for (int i = 0; i < NB_CLASSES; i++)
+    // Computing dW2 = dZ2 * A1.transpose
+    for (size_t k = 0; k < dataset->size; k++)
     {
-        temp_sum = 0;
-        for (int j = 0; j < NB_NEURONS; j++)
+        for (int i = 0; i < NB_NEURONS; i++)
         {
-            temp_mult = 0;
-            for (size_t k = 0; k < dataset->size; k++)
+            float A1_val = output->vectors[k].A1[i];
+            for (int j = 0; j < NB_CLASSES; j++)
             {
-                temp_mult += back_parameters->vectors[k].dZ2[i] * output->vectors[k].A1[j];
-                if (j == 0)
-                {
-                    temp_sum += back_parameters->vectors[k].dZ2[i];
-                }
+                gradients->dW2[j][i] += back_parameters->vectors[k].dZ2[j] * A1_val;
             }
-            temp_mult /= dataset->size;
-            gradients->dW2[i][j] = temp_mult;
         }
-        temp_sum /= dataset->size;
-        gradients->db2[i] = temp_sum;
     }
+    for (int i = 0; i < NB_NEURONS; i++)
+    {
+        for (int j = 0; j < NB_CLASSES; j++)
+        {
+            gradients->dW2[j][i] /= dataset->size;
+        }
+    }
+
+    // Computing db2
+    for (size_t k = 0; k < dataset->size; k++)
+    {
+        for (int j = 0; j < NB_CLASSES; j++)
+        {
+            gradients->db2[j] += back_parameters->vectors[k].dZ2[j];
+        }
+    }
+    for (int j = 0; j < NB_CLASSES; j++)
+    {
+        gradients->db2[j] /= dataset->size;
+    }
+
+
     // Computing dZ1 = W2.transpose * dZ2 and every elements multiplied by ReLU'(Z1)
-    for (int i = 0; i < NB_NEURONS; i++)
+    for (size_t k = 0; k < dataset->size; k++)
     {
-        for (size_t j = 0; j < dataset->size; j++)
+        for (int j = 0; j < NB_CLASSES; j++)
         {
-            temp_mult = 0;
-            for (int k = 0; k < NB_CLASSES; k++)
+            float dZ2_val = back_parameters->vectors[k].dZ2[j];
+            for (int i = 0; i < NB_NEURONS; i++)
             {
-                temp_mult += parameters->W2[k][i] * back_parameters->vectors[j].dZ2[k];
+
+                back_parameters->vectors[k].dZ1[i] += parameters->W2[j][i] * dZ2_val;
             }
-            temp_mult *= relu_deriv(output->vectors[j].Z1[i]);
-            back_parameters->vectors[j].dZ1[i] = temp_mult;
+        }
+        for (int i = 0; i < NB_NEURONS; i++)
+        {
+            back_parameters->vectors[k].dZ1[i] *= relu_deriv(output->vectors[k].Z1[i]);
         }
     }
 
-    // Computing dW1 = dZ1 * dataset / size and d1 = sum of dZ1 rows / size
+    // Computing dW1 = dZ1 * dataset / size
+    for (size_t k = 0; k < dataset->size; k++)
+    {
+        for (int i = 0; i < NB_NEURONS; i++)
+        {
+            float dZ1_val = back_parameters->vectors[k].dZ1[i];
+            for (int j = 0; j < IMAGE_SIZE; j++)
+            {
+                gradients->dW1[i][j] += dZ1_val * dataset->images[k].image[j];
+            }
+        }
+    }
     for (int i = 0; i < NB_NEURONS; i++)
     {
-        temp_sum = 0;
+
         for (int j = 0; j < IMAGE_SIZE; j++)
         {
-            temp_mult = 0;
-            for (size_t k = 0; k < dataset->size; k++)
-            {
-                temp_mult += back_parameters->vectors[k].dZ1[i] * dataset->images[k].image[j];
-                if (j == 0)
-                {
-                    temp_sum += back_parameters->vectors[k].dZ1[i];
-                }
-            }
-            temp_mult /= dataset->size;
-            gradients->dW1[i][j] = temp_mult;
+            gradients->dW1[i][j] /= dataset->size;
         }
-        temp_sum /= dataset->size;
-        gradients->db1[i] = temp_sum;
     }
-    return gradients;
+
+    // computing db1 = sum of dZ1 rows / size
+    for (size_t k = 0; k < dataset->size; k++)
+    {
+        for (int i = 0; i < NB_NEURONS; i++)
+        {
+            gradients->db1[i] += back_parameters->vectors[k].dZ1[i];
+        }
+    }
+    for (int i = 0; i < NB_NEURONS; i++)
+    {
+        gradients->db1[i] /= dataset->size;
+    }
 }
 
 void stochastich_gradient_descent(parameters_t *parameters, const gradients_t *gradients)
@@ -241,7 +260,7 @@ void output_vector_print(const in_vector_t output_vector)
 uint8_t get_prediction(const in_vector_t output_vector)
 {
     float max = output_vector.A2[0];
-    //output_vector_print(output_vector);
+    // output_vector_print(output_vector);
     uint8_t index = 0;
     for (int i = 1; i < NB_CLASSES; i++)
     {
@@ -275,16 +294,24 @@ void train(const dataset_t *dataset)
     output.vectors = malloc(dataset->size * sizeof(in_vector_t));
     back_matrix_t back_parameters;
     back_parameters.vectors = malloc(dataset->size * sizeof(back_vector_t));
-    for (int i = 0; i < 1000; i++)
+    gradients_t *gradients = malloc(sizeof(gradients_t));
+    if (gradients == NULL)
+    {
+        fprintf(stderr, "Could not allocate");
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < 500; i++)
     {
         feed_forward(&output, parameters, dataset);
 
         fprintf(stdout, "Iteration %d : accuracy : %f\n", i, accuracy(dataset, &output));
 
-        gradients_t *gradients = back_propagation(&output, dataset, parameters, &back_parameters); // Changer la def pour opti
+        memset(gradients, 0, sizeof(gradients_t));
+        memset(back_parameters.vectors, 0, dataset->size * sizeof(back_vector_t));
+        back_propagation(&output, dataset, parameters, &back_parameters, gradients); // Changer la def pour opti
         stochastich_gradient_descent(parameters, gradients);
-        free(gradients);
     }
+    free(gradients);
     free(back_parameters.vectors);
     free(output.vectors);
     free(parameters);

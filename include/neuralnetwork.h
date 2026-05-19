@@ -3,7 +3,8 @@
 #include "preprocess_data.h"
 #include <math.h>
 #include <time.h>
-#define NB_NEURONS 64
+#include <string.h>
+#define NB_NEURONS 10
 #define NB_CLASSES 10 // Final output
 #define LEARNING_RATE 0.2
 

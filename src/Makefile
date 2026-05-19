@@ -1,4 +1,4 @@
-CFLAGS= -std=c11 -Wall -Wextra -Werror -Wpedantic -g -MMD -O3
+CFLAGS= -std=c11 -Wall -Wextra -Werror -Wpedantic -g -MMD -O3 -march=native -lm -ffast-math
 CPPFLAGS=-I../include -DDEBUG 
 LDFLAGS=-lm
 
