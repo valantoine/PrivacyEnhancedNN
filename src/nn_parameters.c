@@ -68,10 +68,16 @@ void nn_parameters_print(const nn_parameters_t *parameters, FILE *fd)
     fclose(fd);
 }
 
-void nn_parameters_write(const nn_parameters_t *parameters, FILE *fd)
+uint8_t nn_parameters_write(const nn_parameters_t *parameters, FILE *fd)
 {
-    fwrite(parameters, sizeof(nn_parameters_t), 1, fd);
+    if (1!=fwrite(parameters, sizeof(nn_parameters_t), 1, fd))
+    {
+        fprintf(stderr, "Failed to write");
+        fclose(fd);
+        return 0;
+    }
     fclose(fd);
+    return 1;
 }
 
 nn_parameters_t *nn_parameters_get(FILE *fd)

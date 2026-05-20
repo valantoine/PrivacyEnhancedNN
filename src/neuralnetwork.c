@@ -330,16 +330,17 @@ nn_parameters_t *train(dataset_t *dataset)
             back_propagation(&output, dataset, parameters, &back_parameters, gradients);
             stochastich_gradient_descent(parameters, gradients);
         }
-
-        // Remainder batch which is not exactly of size BATCH_SIZE
-        dataset->images = original_image + nb_batches * BATCH_SIZE;
-        dataset->size = (original_size % BATCH_SIZE);
-        feed_forward(&output, parameters, dataset);
-        memset(gradients, 0, sizeof(gradients_t));
-        memset(back_parameters.vectors, 0, dataset->size * sizeof(back_vector_t));
-        back_propagation(&output, dataset, parameters, &back_parameters, gradients);
-        stochastich_gradient_descent(parameters, gradients);
-
+        if (original_size % BATCH_SIZE != 0)
+        {
+            // Remainder batch which is not exactly of size BATCH_SIZE
+            dataset->images = original_image + nb_batches * BATCH_SIZE;
+            dataset->size = (original_size % BATCH_SIZE);
+            feed_forward(&output, parameters, dataset);
+            memset(gradients, 0, sizeof(gradients_t));
+            memset(back_parameters.vectors, 0, dataset->size * sizeof(back_vector_t));
+            back_propagation(&output, dataset, parameters, &back_parameters, gradients);
+            stochastich_gradient_descent(parameters, gradients);
+        }
         // Restore original image address
         dataset->images = original_image;
         dataset->size = original_size;

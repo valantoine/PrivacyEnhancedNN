@@ -15,7 +15,7 @@ void print_help()
     fprintf(stdout, "-t, --train                  train the neural network using the MNIST dataset \n");
     fprintf(stdout, "-p , --predict               Predict N random image picked from the MNIST test dataset using a given parameter file \n");
     fprintf(stdout, "-i FILE, --input FILE        input parameters file. In case of training --> write trained parameters in this file | In case of predict --> use parameters in this file to predict\n");
-    fprintf(stdout, "-n NUMBER, --number NUMBER   (OPTIONAL) Number of images you want to predict from test dataset (default : 1)\n");
+    fprintf(stdout, "-n NUMBER, --number NUMBER   (OPTIONAL) Number of images you want to predict from test dataset (default : 1) max : 255\n");
     fprintf(stdout, "-h, --help                   display this help and exit\n");
 }
 

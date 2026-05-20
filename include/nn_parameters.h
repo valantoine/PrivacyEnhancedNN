@@ -2,7 +2,7 @@
 #define NN_PARAMETERS_H
 #include "preprocess_data.h"
 
-#define NB_NEURONS 32
+#define NB_NEURONS 64
 #define NB_CLASSES 10 // Final output
 
 
@@ -20,7 +20,7 @@ extern nn_parameters_t *init_parameters();
 
 extern void nn_parameters_print(const nn_parameters_t *parameters, FILE *fd);
 
-extern void nn_parameters_write(const nn_parameters_t *parameters, FILE *fd);
+extern uint8_t nn_parameters_write(const nn_parameters_t *parameters, FILE *fd);
 
 extern nn_parameters_t *nn_parameters_get(FILE *fd);
 

@@ -31,8 +31,14 @@ int main(int argc, char *argv[])
             free(user_parameters);
             return 0;
         }
-        nn_parameters_write(parameters, user_parameters->input_parameters);
-        free(parameters);
+        uint8_t error = nn_parameters_write(parameters, user_parameters->input_parameters);
+        if (error ==0){
+            dataset_free(train_dataset);
+            dataset_free(test_dataset);
+            free(parameters);
+            return 0;
+        }
+        
     }
     if (user_parameters->mode == PREDICT_MODE)
     {
