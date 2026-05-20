@@ -82,7 +82,11 @@ nn_parameters_t *nn_parameters_get(FILE *fd)
         fprintf(stderr, "Failed to allocate parameters");
         return NULL;
     }
-    fread(parameters, sizeof(nn_parameters_t), 1, fd);
+    if (1!=fread(parameters, sizeof(nn_parameters_t), 1, fd))
+    {
+        fprintf(stderr, "Failed to read");
+        return NULL;
+    }
     fclose(fd);
     return parameters;
 }
