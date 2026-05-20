@@ -112,7 +112,7 @@ user_parameters_t *parser_io(int argc, char *argv[])
                 fseek(user_parameters->input_parameters, 0, SEEK_SET); // Place cursor at the beginning of file
                 if (file_size != sizeof(nn_parameters_t))
                 {
-                    fprintf(stderr, "Invalid file size : %ld bytes instead of %zu\n", file_size, sizeof(nn_parameters_t));
+                    fprintf(stderr, "Invalid file size : %zu bytes instead of %zu\n", file_size, sizeof(nn_parameters_t));
                     return NULL;
                 }
             }
