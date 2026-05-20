@@ -9,15 +9,15 @@ src = $(wildcard *.c)
 obj = $(src:.c=.o)
 dep = $(obj:.o=.d)
 
-all: neuralnetwork
+all: penn
 
-neuralnetwork: $(obj)
+penn: $(obj)
 	@$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LDFLAGS)
 
 -include $(dep)
 
 clean:
-	@rm -f $(obj) $(dep) $(BINDIR)/.neuralnetwork
+	@rm -f $(obj) $(dep) $(BINDIR)/.penn
 
 help:
 	@echo "Usage:"

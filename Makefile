@@ -2,7 +2,7 @@ all:
 	@cd src && make all
 
 clean:
-	rm -f neuralnetwork src/*.o src/*.d
+	rm -f penn src/*.o src/*.d
 
 help:
 	@echo "Usage:"

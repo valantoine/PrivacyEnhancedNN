@@ -1,6 +1,9 @@
 #ifndef PREPROCESS_DATA_H
 #define PREPROCESS_DATA_H
-#include "lin_algebra_misc.h"
+#include <stdint.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <inttypes.h>
 #include <time.h>
 
 
