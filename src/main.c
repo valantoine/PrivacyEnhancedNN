@@ -1,6 +1,10 @@
 #include "main.h"
 int main(int argc, char *argv[])
 {
+    
+    test_encode_decode();
+    test_add_encode_decode();
+    test_mult_encode_decode();
     srand(time(NULL));
     user_parameters_t *user_parameters = parser_io(argc, argv);
     if (user_parameters == NULL)

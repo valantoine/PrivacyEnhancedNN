@@ -2,6 +2,7 @@
 #define NEURALNETWORK_H
 #include "nn_parameters.h"
 #include <math.h>
+
 #include <string.h>
 
 #define LEARNING_RATE 0.1
