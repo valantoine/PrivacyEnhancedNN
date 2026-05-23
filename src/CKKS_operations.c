@@ -41,19 +41,21 @@ ciphered_t *ckks_mult_cipher_plain(const ciphered_t *c, encoded_polynomial_t *p,
     if (mult->A == NULL)
     {
         free(mult);
+        encoded_pol_free(mult_A);
         return NULL;
     }
     mult->B = encoded_pol_mult_modulo_no_rescaling(c->B, p, modulo);
     if (mult->B == NULL)
     {
         polynomial_free(mult->A);
+        encoded_pol_free(mult_A);
         free(mult);
         return NULL;
     }
 
     // Reduce multiplicative level by 1
-    div_and_round_polynomial(mult->A, modulo);
-    div_and_round_encoded_polynomial(mult->B, modulo);
+    div_and_round_polynomial(mult->A, scaling_factor);
+    div_and_round_encoded_polynomial(mult->B, scaling_factor);
     encoded_pol_free(mult_A);
     return mult;
 }
