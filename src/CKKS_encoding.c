@@ -1,14 +1,14 @@
 #include "CKKS_encoding.h"
 
-uint64_t j_in_vandermonde(uint16_t h, size_t size)
+int64_t j_in_vandermonde(uint16_t h, size_t size)
 {
-    uint64_t result = 1;
-    uint64_t mod = 2 * size; // 2 * 1568 = 3136
-    for (uint64_t i = 0; i < h; i++)
+    int64_t result = 1;
+    int64_t mod = 2 * size; // 2 * 1568 = 3136
+    for (int64_t i = 0; i < h; i++)
     {
         result = (result * 5) % mod; // modulo à chaque étape pour éviter overflow peut être améliorer
     }
-    return (uint64_t)result;
+    return (int64_t)result;
 }
 
 complex_matrix_t *sigma_basis_tilde_init(size_t size)
@@ -94,7 +94,7 @@ complex_matrix_t *mult_sigma_basis_anti_identity(size_t size)
     return mult;
 }
 
-encoded_polynomial_t *complex_vector_encode(complex_vector_t *vector, complex_matrix_t *precomputed_sigma_basis, uint64_t scaling_factor)
+encoded_polynomial_t *complex_vector_encode(complex_vector_t *vector, complex_matrix_t *precomputed_sigma_basis, int64_t scaling_factor)
 {
     encoded_polynomial_t *pol = encoded_pol_init(vector->size);
     if (pol == NULL)
@@ -138,7 +138,7 @@ complex_matrix_t *sigma_basis_tilde_etoile_init(size_t size)
     return basis_matrix_etoile;
 }
 
-complex_vector_t *recover_vector(encoded_polynomial_t *encoded_pol, complex_matrix_t *sigma_basis_etoile, uint64_t scaling_factor)
+complex_vector_t *recover_vector(encoded_polynomial_t *encoded_pol, complex_matrix_t *sigma_basis_etoile, int64_t scaling_factor)
 {
     complex_vector_t *recovered = complex_vector_init(encoded_pol->size);
     if (recovered == NULL)
@@ -170,7 +170,7 @@ void test_encode_decode()
     printf("TEST ENCODAGE/DECODAGE \n");
     // Encode
     size_t size = 4;
-    uint64_t scaling_factor = 1024;
+    int64_t scaling_factor = 1024;
     complex_vector_t *complex_vector = complex_vector_init(size);
     complex_vector->vector[0] = 1.1 + I * 4.3;
     complex_vector->vector[1] = 3.5 - I * 1.4;
@@ -180,7 +180,7 @@ void test_encode_decode()
 
     complex_matrix_t *mult_sigma_IN = mult_sigma_basis_anti_identity(size);
     encoded_polynomial_t *encoded_pol = complex_vector_encode(complex_vector, mult_sigma_IN, scaling_factor);
-    polynomial_print(encoded_pol);
+    encoded_polynomial_print(encoded_pol);
 
     // Decode
     complex_matrix_t *basis_matrix_etoile = sigma_basis_tilde_etoile_init(size);
@@ -198,7 +198,7 @@ void test_add_encode_decode()
 {
     printf("TEST ADDITION \n");
     size_t size = 4;
-    uint64_t scaling_factor = 1024;
+    int64_t scaling_factor = 1024;
     complex_vector_t *complex_vector1 = complex_vector_init(size);
     complex_vector1->vector[0] = 1.1 + I * 4.3;
     complex_vector1->vector[1] = -3.5 - I * 1.4;
@@ -222,17 +222,17 @@ void test_add_encode_decode()
 
     complex_matrix_t *mult_sigma_IN = mult_sigma_basis_anti_identity(size);
     encoded_polynomial_t *encoded_pol1 = complex_vector_encode(complex_vector1, mult_sigma_IN, scaling_factor);
-    polynomial_print(encoded_pol1);
+    encoded_polynomial_print(encoded_pol1);
     encoded_polynomial_t *encoded_pol2 = complex_vector_encode(complex_vector2, mult_sigma_IN, scaling_factor);
-    polynomial_print(encoded_pol2);
+    encoded_polynomial_print(encoded_pol2);
     encoded_polynomial_t *encoded_pol3 = complex_vector_encode(complex_vector3, mult_sigma_IN, scaling_factor);
-    polynomial_print(encoded_pol3);
-    pol_add(encoded_pol1, encoded_pol2);
+    encoded_polynomial_print(encoded_pol3);
+    encoded_pol_add(encoded_pol1, encoded_pol2);
     // Sum 1 et 2
-    polynomial_print(encoded_pol1);
+    encoded_polynomial_print(encoded_pol1);
 
     // sum 1 + 2 + 3
-    pol_add(encoded_pol1, encoded_pol3);
+    encoded_pol_add(encoded_pol1, encoded_pol3);
     // Decode
 
     complex_matrix_t *basis_matrix_etoile = sigma_basis_tilde_etoile_init(size);
@@ -254,30 +254,30 @@ void test_mult_encode_decode()
 {
     printf("TEST MULTIPLICATION\n");
     size_t size = 4;
-    uint64_t scaling_factor = 100000000; 
+    int64_t scaling_factor = 100000000; 
     complex_vector_t *complex_vector1 = complex_vector_init(size);
-    complex_vector1->vector[0] = 2 + I * 3;
-    complex_vector1->vector[1] = 5 - I * 7;
-    complex_vector1->vector[2] = conjf(2 + I * 3);
-    complex_vector1->vector[3] = conjf(5 - I * 7);
+    complex_vector1->vector[0] = 2.5;
+    complex_vector1->vector[1] = 1.2;
+    complex_vector1->vector[2] = conjf(2.5);
+    complex_vector1->vector[3] = conjf(1.2);
     complex_vector_print(complex_vector1);
 
     complex_vector_t *complex_vector2 = complex_vector_init(size);
-    complex_vector2->vector[0] = 3 + I * 3;
-    complex_vector2->vector[1] = 4 - I * 3;
-    complex_vector2->vector[2] = conjf(3 + I * 3);
-    complex_vector2->vector[3] = conjf(4 - I * 3);
+    complex_vector2->vector[0] = 4;
+    complex_vector2->vector[1] = 5;
+    complex_vector2->vector[2] = conjf(4);
+    complex_vector2->vector[3] = conjf(5);
     complex_vector_print(complex_vector2);
 
     complex_matrix_t *mult_sigma_IN = mult_sigma_basis_anti_identity(size);
     encoded_polynomial_t *encoded_pol1 = complex_vector_encode(complex_vector1, mult_sigma_IN, scaling_factor);
-    polynomial_print(encoded_pol1);
+    encoded_polynomial_print(encoded_pol1);
     encoded_polynomial_t *encoded_pol2 = complex_vector_encode(complex_vector2, mult_sigma_IN, scaling_factor);
-    polynomial_print(encoded_pol2);
+    encoded_polynomial_print(encoded_pol2);
 
-    encoded_polynomial_t *mult = pol_mult(encoded_pol1, encoded_pol2, scaling_factor);
+    encoded_polynomial_t *mult = encoded_pol_mult(encoded_pol1, encoded_pol2, scaling_factor);
     // Sum 1 et 2
-    polynomial_print(mult);
+    encoded_polynomial_print(mult);
 
     // Decode
     complex_matrix_t *basis_matrix_etoile = sigma_basis_tilde_etoile_init(size);

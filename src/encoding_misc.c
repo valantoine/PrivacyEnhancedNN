@@ -86,12 +86,13 @@ void complex_matrix_set(complex_matrix_t *cm, uint16_t i, uint16_t j, float comp
     cm->matrix[i * cm->size + j] = z;
 }
 
-void polynomial_print(encoded_polynomial_t *pol)
+void encoded_polynomial_print(encoded_polynomial_t *pol)
 {
     for (size_t i = 0; i < pol->size; i++)
     {
-        fprintf(stdout, "Coef %zu : %" PRId64 "\n", i, pol->coeffs[i]);
+        fprintf(stdout, "%" PRId64 "*X^%zu + ", pol->coeffs[i], i);
     }
+    fprintf(stdout, "\n");
 }
 
 void float_complex_print(float complex z)

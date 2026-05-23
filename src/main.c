@@ -1,11 +1,13 @@
 #include "main.h"
+//
+
 int main(int argc, char *argv[])
 {
-    
-    test_encode_decode();
-    test_add_encode_decode();
-    test_mult_encode_decode();
     srand(time(NULL));
+
+    test_encrypt_decrypt();
+
+    
     user_parameters_t *user_parameters = parser_io(argc, argv);
     if (user_parameters == NULL)
     {
@@ -36,13 +38,13 @@ int main(int argc, char *argv[])
             return 0;
         }
         uint8_t error = nn_parameters_write(parameters, user_parameters->input_parameters);
-        if (error ==0){
+        if (error == 0)
+        {
             dataset_free(train_dataset);
             dataset_free(test_dataset);
             free(parameters);
             return 0;
         }
-        
     }
     if (user_parameters->mode == PREDICT_MODE)
     {

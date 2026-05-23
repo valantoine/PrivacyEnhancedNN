@@ -23,6 +23,8 @@ typedef struct
     size_t size;
 } encoded_polynomial_t;
 
+extern void encoded_polynomial_print(encoded_polynomial_t *pol);
+
 extern complex_vector_t *complex_vector_init(size_t size);
 
 extern void complex_vector_free(complex_vector_t *cv);
@@ -39,8 +41,6 @@ extern void encoded_pol_free(encoded_polynomial_t *pol);
 extern float complex complex_matrix_get(complex_matrix_t *cm, uint16_t i, uint16_t j);
 
 extern void complex_matrix_set(complex_matrix_t *cm, uint16_t i, uint16_t j, float complex z);
-
-extern void polynomial_print(encoded_polynomial_t *pol);
 
 extern void float_complex_print(float complex z);
 
