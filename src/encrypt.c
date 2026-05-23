@@ -152,9 +152,11 @@ ciphered_t *encrypt(encoded_polynomial_t *scaled_M, polynomial_t *secret_key, ui
     return c;
 }
 
-int64_t round_to_nearest_multiple(int64_t to_round, uint64_t multiple)
+int64_t round_to_nearest_multiple(int64_t to_round, int64_t multiple)
 {
-    return (int64_t)round((double)to_round / (double)multiple) * multiple;
+    if (to_round >= 0)
+        return ((to_round + multiple / 2) / multiple) * multiple;
+    return -((-to_round + multiple / 2) / multiple) * multiple;
 }
 
 void round_encoded_pol_to_nearest_multiple(encoded_polynomial_t *pol, uint64_t multiple)

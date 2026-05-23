@@ -33,7 +33,6 @@ void polynomial_print(polynomial_t *pol)
         fprintf(stdout, "%" PRId64 "*X^%zu + ", pol->coeffs[i], i);
     }
     fprintf(stdout, "\n");
-    
 }
 
 void encoded_pol_add(encoded_polynomial_t *pol1, const encoded_polynomial_t *pol2)
@@ -119,7 +118,7 @@ void encoded_pol_add_polynomial_modulo(encoded_polynomial_t *pol1, const polynom
     }
 }
 
-encoded_polynomial_t *encoded_pol_mult_polynomial_modulo(const encoded_polynomial_t *pol1, const polynomial_t *pol2,int64_t modulo)
+encoded_polynomial_t *encoded_pol_mult_polynomial_modulo(const encoded_polynomial_t *pol1, const polynomial_t *pol2, int64_t modulo)
 {
     encoded_polynomial_t *mult_pol = encoded_pol_init(pol1->size);
     if (mult_pol == NULL)
@@ -230,5 +229,110 @@ void polynomial_scalar_mult_modulo(polynomial_t *pol, int64_t scalar, int64_t mo
     for (size_t i = 0; i < pol->degree; i++)
     {
         pol->coeffs[i] = (pol->coeffs[i] * scalar) % modulo;
+    }
+}
+
+// Rescaling function to decrease the mod Q of one multiplicative level after
+void div_and_round_polynomial(polynomial_t *pol, int64_t divisor)
+{
+    for (size_t i = 0; i < pol->degree; i++)
+    {
+        int64_t x = pol->coeffs[i];
+        if (x >= 0)
+            pol->coeffs[i] = (x + divisor / 2) / divisor;
+        else
+            pol->coeffs[i] = -(-x + divisor / 2) / divisor;
+    }
+}
+
+void div_and_round_encoded_polynomial(encoded_polynomial_t *pol, int64_t divisor)
+{
+    for (size_t i = 0; i < pol->size; i++)
+    {
+        int64_t x = pol->coeffs[i];
+        if (x >= 0)
+            pol->coeffs[i] = (x + divisor / 2) / divisor;
+        else
+            pol->coeffs[i] = -(-x + divisor / 2) / divisor;
+    }
+}
+
+encoded_polynomial_t *encoded_pol_mult_modulo_no_rescaling(const encoded_polynomial_t *pol1, const encoded_polynomial_t *pol2, int64_t modulo)
+{
+    encoded_polynomial_t *mult_pol = encoded_pol_init(pol1->size);
+    if (mult_pol == NULL)
+    {
+        return NULL;
+    }
+    for (size_t i = 0; i < mult_pol->size; i++)
+    {
+        for (size_t j = 0; j < mult_pol->size; j++)
+        {
+            if ((i + j) >= mult_pol->size)
+            {
+                mult_pol->coeffs[(i + j) % mult_pol->size] += (pol1->coeffs[i] * pol2->coeffs[j] * (-1)) % modulo;
+            }
+            else
+            {
+                mult_pol->coeffs[(i + j)] += (pol1->coeffs[i] * pol2->coeffs[j]) % modulo;
+            }
+        }
+    }
+
+    return mult_pol;
+}
+
+polynomial_t *encoded_to_polynomial(encoded_polynomial_t *encoded)
+{
+    polynomial_t *p = polyonimal_init(encoded->size);
+    if (p == NULL)
+    {
+        return NULL;
+    }
+    for (size_t i = 0; i < encoded->size; i++)
+    {
+        p->coeffs[i] = encoded->coeffs[i];
+    }
+    return p;
+}
+
+encoded_polynomial_t *encoded_pol_mult_polynomial(const encoded_polynomial_t *pol1, const polynomial_t *pol2)
+{
+    encoded_polynomial_t *mult_pol = encoded_pol_init(pol1->size);
+    if (mult_pol == NULL)
+    {
+        return NULL;
+    }
+    for (size_t i = 0; i < mult_pol->size; i++)
+    {
+        for (size_t j = 0; j < mult_pol->size; j++)
+        {
+            if ((i + j) >= mult_pol->size)
+            {
+                mult_pol->coeffs[(i + j) % mult_pol->size] += ((pol1->coeffs[i] * pol2->coeffs[j] * (-1)));
+            }
+            else
+            {
+                mult_pol->coeffs[(i + j)] += ((pol1->coeffs[i] * pol2->coeffs[j]));
+            }
+        }
+    }
+
+    return mult_pol;
+}
+
+void polynomial_add(polynomial_t *pol1, const polynomial_t *pol2)
+{
+    for (size_t i = 0; i < pol1->degree; i++)
+    {
+        pol1->coeffs[i] = (pol1->coeffs[i] + pol2->coeffs[i]);
+    }
+}
+
+void polynomial_add_modulo(polynomial_t *pol1, const polynomial_t *pol2, int64_t modulo)
+{
+    for (size_t i = 0; i < pol1->degree; i++)
+    {
+        pol1->coeffs[i] = (pol1->coeffs[i] + pol2->coeffs[i]) % modulo;
     }
 }

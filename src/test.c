@@ -231,7 +231,7 @@ void test_encrypt_add_cipher()
     fprintf(stdout, "Recovered vector");
     complex_vector_print(recovered_complex_vector);
 
-    //Free later
+    // Free later
 }
 
 void test_encrypt_add_plain()
@@ -288,5 +288,58 @@ void test_encrypt_add_plain()
     fprintf(stdout, "Recovered vector");
     complex_vector_print(recovered_complex_vector);
 
-    //Free later
+    // Free later
+}
+
+void test_encrypt_mult_plain()
+{
+    // encoding
+    printf("TEST ENCRYPTED MULTIPLICATION WITH PLAIN \n");
+    size_t size = 2;
+    int64_t encoding_precision_factor = 512;
+    int64_t scaling_factor = 256;
+    complex_vector_t *complex_vector1 = complex_vector_init(size);
+    complex_vector1->vector[0] = 2;
+    complex_vector1->vector[1] = conjf(2);
+    fprintf(stdout, "First vector : \n");
+    complex_vector_print(complex_vector1);
+
+    complex_vector_t *complex_vector2 = complex_vector_init(size);
+    complex_vector2->vector[0] = 4;
+    complex_vector2->vector[1] = conjf(4);
+    fprintf(stdout, "Second vector : \n");
+    complex_vector_print(complex_vector2);
+
+    complex_matrix_t *mult_sigma_IN = mult_sigma_basis_anti_identity(size);
+    encoded_polynomial_t *encoded_pol1 = complex_vector_encode(complex_vector1, mult_sigma_IN, encoding_precision_factor);
+    fprintf(stdout, "First encoded vector : \n");
+    encoded_polynomial_print(encoded_pol1);
+    encoded_polynomial_t *encoded_pol2 = complex_vector_encode(complex_vector2, mult_sigma_IN, encoding_precision_factor);
+    fprintf(stdout, "Second encoded vector : \n");
+    encoded_polynomial_print(encoded_pol2);
+
+    // Encrypting
+    polynomial_t *secret_key = key_generation(size);
+
+    fprintf(stdout, " Key : \n");
+    polynomial_print(secret_key);
+    int64_t modulo = (1 << 16) * scaling_factor; // i.e q_0 = 2^16, L=1, delta= scaling_factor
+    ciphered_t *c1 = encrypt(encoded_pol1, secret_key, modulo, scaling_factor);
+    fprintf(stdout, "First ciphered vector : \n");
+    cipher_print(c1);
+
+    // Multiplication
+    ciphered_t *mult = ckks_mult_cipher_plain(c1, encoded_pol2, modulo, scaling_factor);
+    fprintf(stdout, "MULT :\n");
+    cipher_print(mult);
+
+    encoded_polynomial_t *scaled_M = decrypt(mult, secret_key, modulo, scaling_factor);
+    fprintf(stdout, "Sum after decryption : \n");
+    encoded_polynomial_print(scaled_M);
+
+    // Decoding
+    complex_matrix_t *basis_matrix_etoile = sigma_basis_tilde_etoile_init(size);
+    complex_vector_t *recovered_complex_vector = recover_vector(scaled_M, basis_matrix_etoile, encoding_precision_factor);
+    fprintf(stdout, "Recovered vector");
+    complex_vector_print(recovered_complex_vector);
 }

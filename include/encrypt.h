@@ -23,4 +23,14 @@ extern encoded_polynomial_t *decrypt(ciphered_t *cipher, polynomial_t *secret_ke
 
 extern void cipher_print(ciphered_t *c);
 
+extern int64_t round_to_nearest_multiple(int64_t to_round, int64_t multiple);
+
+extern void cipher_copy_A(ciphered_t *c, polynomial_t *A_to_copy);
+
+extern void cipher_copy_B(ciphered_t *c, encoded_polynomial_t *B_to_copy);
+
+extern polynomial_t *A_generation(size_t size);
+
+extern polynomial_t *E_generation(size_t size);
+
 #endif /*KEY_GENERATION_H*/
