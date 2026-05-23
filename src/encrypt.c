@@ -23,7 +23,7 @@ polynomial_t *A_generation(size_t size)
     }
     for (size_t i = 0; i < size; i++)
     {
-        A->coeffs[i] = (rand() % 257) - 128; // A changer plus tard en fonction du modulo Q
+        A->coeffs[i] = (rand() % RAND_MAX) - (RAND_MAX / 2); // A changer plus tard en fonction du modulo Q
     }
     return A;
 }
@@ -106,9 +106,9 @@ void cipher_print(ciphered_t *c)
 }
 
 // Modulo needs to be way bigger
-ciphered_t *encrypt(encoded_polynomial_t *scaled_M, polynomial_t *secret_key, uint64_t modulo)
+ciphered_t *encrypt(encoded_polynomial_t *scaled_M, polynomial_t *secret_key, uint64_t modulo, int64_t scaling_factor)
 {
-
+    encoded_pol_scalar_mult(scaled_M, scaling_factor);
     ciphered_t *c = cipher_init(scaled_M->size);
     if (c == NULL)
     {
@@ -125,8 +125,8 @@ ciphered_t *encrypt(encoded_polynomial_t *scaled_M, polynomial_t *secret_key, ui
     {
         return NULL;
     }
-    fprintf(stdout, "E : \n");
-    polynomial_print(E);
+    // fprintf(stdout, "E : \n");
+    // polynomial_print(E);
 
     polynomial_t *prod = polynomial_mult_modulo(A, secret_key, modulo); // -A * S
     if (prod == NULL)
@@ -137,8 +137,8 @@ ciphered_t *encrypt(encoded_polynomial_t *scaled_M, polynomial_t *secret_key, ui
     // Adding error in M, ATTENTION error E should not wrap modulo and every |coefficient| should be less than scaling_factor / 2
     encoded_pol_add_polynomial_modulo(scaled_M, E, modulo);
 
-    fprintf(stdout, "Polynome avec erreur encryption :\n ");
-    encoded_polynomial_print(scaled_M);
+    // fprintf(stdout, "Polynome avec erreur encryption :\n ");
+    // encoded_polynomial_print(scaled_M);
 
     // Adding secret mask, it can wrap modulo since we sub it at decryption
     polynomial_scalar_mult(prod, -1);
@@ -191,62 +191,15 @@ encoded_polynomial_t *decrypt(ciphered_t *cipher, polynomial_t *secret_key, uint
     // Removing the secret mask from the ciphered text --> We recovered M_scaled + E
     encoded_pol_add_polynomial_modulo(scaled_M, prod, modulo);
 
-    fprintf(stdout, "Polynome avec erreur decryption :\n ");
-    encoded_polynomial_print(scaled_M);
+    // fprintf(stdout, "Polynome avec erreur decryption :\n ");
+    // encoded_polynomial_print(scaled_M);
 
     // If E is smaller than scaling_factor / 2, rounding to the nearest multiple of scaling_factor should give us M_scaled
     round_encoded_pol_to_nearest_multiple(scaled_M, scaling_factor);
-
-
+    
+    encoded_pol_scalar_div(scaled_M, scaling_factor);
     polynomial_free(prod);
 
     return scaled_M;
 }
 
-void test_encrypt_decrypt()
-{
-    // Encode
-    fprintf(stdout, "MAX INT :%" PRId64 " MIN INT :%" PRId64"\n", INT64_MAX, INT64_MIN);
-    size_t size = 2;
-    int64_t encoding_precision_factor = 1024;
-    int64_t scaling_factor = 64;
-    complex_vector_t *complex_vector = complex_vector_init(size);
-    complex_vector->vector[0] = 10000.5125;
-    complex_vector->vector[1] = conjf(10000.5125);
-    complex_vector_print(complex_vector);
-
-    complex_matrix_t *mult_sigma_IN = mult_sigma_basis_anti_identity(size);
-    encoded_polynomial_t *encoded_pol = complex_vector_encode(complex_vector, mult_sigma_IN, encoding_precision_factor);
-    encoded_polynomial_print(encoded_pol);
-
-    // Encrypt
-    polynomial_t *secret_key = key_generation(size);
-
-    encoded_pol_scalar_mult(encoded_pol, scaling_factor);
-
-    fprintf(stdout, " Key : \n");
-    polynomial_print(secret_key);
-    int64_t modulo = INT64_MAX;
-    ciphered_t *c = encrypt(encoded_pol, secret_key, modulo);
-    cipher_print(c);
-
-    // Decrypt
-    encoded_polynomial_t *scaled_M = decrypt(c, secret_key, modulo, scaling_factor);
-    encoded_pol_scalar_div(scaled_M, scaling_factor);
-    fprintf(stdout, "Polynome after decryption : \n");
-    encoded_polynomial_print(scaled_M);
-
-    // Decode
-    complex_matrix_t *basis_matrix_etoile = sigma_basis_tilde_etoile_init(size);
-    complex_vector_t *recovered_complex_vector = recover_vector(scaled_M, basis_matrix_etoile, encoding_precision_factor);
-    complex_vector_print(recovered_complex_vector);
-
-    complex_vector_free(complex_vector);
-    complex_matrix_free(mult_sigma_IN);
-    encoded_pol_free(encoded_pol);
-    polynomial_free(secret_key);
-    cipher_free(c);
-    encoded_pol_free(scaled_M);
-    complex_matrix_free(basis_matrix_etoile);
-    complex_vector_free(recovered_complex_vector);
-}

@@ -7,11 +7,7 @@
 #define  M_PI  3.1415926535897932384626433
 #endif
 
-extern void test_encode_decode();
 
-extern void test_add_encode_decode();
-
-extern void test_mult_encode_decode();
 
 // Poorly optimized
 extern complex_matrix_t *mult_sigma_basis_anti_identity(size_t size);

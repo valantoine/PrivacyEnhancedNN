@@ -1,0 +1,292 @@
+#include "test.h"
+void test_encode_decode()
+{
+    printf("TEST ENCODAGE/DECODAGE \n");
+    // Encode
+    size_t size = 4;
+    int64_t scaling_factor = 1024;
+    complex_vector_t *complex_vector = complex_vector_init(size);
+    complex_vector->vector[0] = 1.1 + I * 4.3;
+    complex_vector->vector[1] = 3.5 - I * 1.4;
+    complex_vector->vector[2] = conjf(1.1 + I * 4.3);
+    complex_vector->vector[3] = conjf(3.5 - I * 1.4);
+    complex_vector_print(complex_vector);
+
+    complex_matrix_t *mult_sigma_IN = mult_sigma_basis_anti_identity(size);
+    encoded_polynomial_t *encoded_pol = complex_vector_encode(complex_vector, mult_sigma_IN, scaling_factor);
+    encoded_polynomial_print(encoded_pol);
+
+    // Decode
+    complex_matrix_t *basis_matrix_etoile = sigma_basis_tilde_etoile_init(size);
+    complex_vector_t *recovered_complex_vector = recover_vector(encoded_pol, basis_matrix_etoile, scaling_factor);
+    complex_vector_print(recovered_complex_vector);
+
+    complex_vector_free(complex_vector);
+    complex_vector_free(recovered_complex_vector);
+    complex_matrix_free(basis_matrix_etoile);
+    complex_matrix_free(mult_sigma_IN);
+    encoded_pol_free(encoded_pol);
+}
+
+void test_add_encode_decode()
+{
+    printf("TEST ADDITION \n");
+    size_t size = 4;
+    int64_t scaling_factor = 1024;
+    complex_vector_t *complex_vector1 = complex_vector_init(size);
+    complex_vector1->vector[0] = 1.1 + I * 4.3;
+    complex_vector1->vector[1] = -3.5 - I * 1.4;
+    complex_vector1->vector[2] = conjf(1.1 + I * 4.3);
+    complex_vector1->vector[3] = conjf(-3.5 - I * 1.4);
+    complex_vector_print(complex_vector1);
+
+    complex_vector_t *complex_vector2 = complex_vector_init(size);
+    complex_vector2->vector[0] = 0.9 + I * 0.7;
+    complex_vector2->vector[1] = 1.5 - I * 2.6;
+    complex_vector2->vector[2] = conjf(0.9 + I * 0.7);
+    complex_vector2->vector[3] = conjf(1.5 - I * 2.6);
+    complex_vector_print(complex_vector2);
+
+    complex_vector_t *complex_vector3 = complex_vector_init(size);
+    complex_vector3->vector[0] = 800 + I * 150;
+    complex_vector3->vector[1] = -400 - I * 300;
+    complex_vector3->vector[2] = conjf(800 + I * 150);
+    complex_vector3->vector[3] = conjf(-400 - I * 300);
+    complex_vector_print(complex_vector3);
+
+    complex_matrix_t *mult_sigma_IN = mult_sigma_basis_anti_identity(size);
+    encoded_polynomial_t *encoded_pol1 = complex_vector_encode(complex_vector1, mult_sigma_IN, scaling_factor);
+    encoded_polynomial_print(encoded_pol1);
+    encoded_polynomial_t *encoded_pol2 = complex_vector_encode(complex_vector2, mult_sigma_IN, scaling_factor);
+    encoded_polynomial_print(encoded_pol2);
+    encoded_polynomial_t *encoded_pol3 = complex_vector_encode(complex_vector3, mult_sigma_IN, scaling_factor);
+    encoded_polynomial_print(encoded_pol3);
+    encoded_pol_add(encoded_pol1, encoded_pol2);
+    // Sum 1 et 2
+    encoded_polynomial_print(encoded_pol1);
+
+    // sum 1 + 2 + 3
+    encoded_pol_add(encoded_pol1, encoded_pol3);
+    // Decode
+
+    complex_matrix_t *basis_matrix_etoile = sigma_basis_tilde_etoile_init(size);
+    complex_vector_t *recovered_complex_vector1 = recover_vector(encoded_pol1, basis_matrix_etoile, scaling_factor);
+    complex_vector_print(recovered_complex_vector1);
+
+    complex_vector_free(complex_vector1);
+    complex_vector_free(complex_vector2);
+    complex_vector_free(complex_vector3);
+    complex_vector_free(recovered_complex_vector1);
+    complex_matrix_free(basis_matrix_etoile);
+    complex_matrix_free(mult_sigma_IN);
+    encoded_pol_free(encoded_pol1);
+    encoded_pol_free(encoded_pol2);
+    encoded_pol_free(encoded_pol3);
+}
+
+void test_mult_encode_decode()
+{
+    printf("TEST MULTIPLICATION\n");
+    size_t size = 4;
+    int64_t scaling_factor = 100000000;
+    complex_vector_t *complex_vector1 = complex_vector_init(size);
+    complex_vector1->vector[0] = 2.5;
+    complex_vector1->vector[1] = 1.2;
+    complex_vector1->vector[2] = conjf(2.5);
+    complex_vector1->vector[3] = conjf(1.2);
+    complex_vector_print(complex_vector1);
+
+    complex_vector_t *complex_vector2 = complex_vector_init(size);
+    complex_vector2->vector[0] = 4;
+    complex_vector2->vector[1] = 5;
+    complex_vector2->vector[2] = conjf(4);
+    complex_vector2->vector[3] = conjf(5);
+    complex_vector_print(complex_vector2);
+
+    complex_matrix_t *mult_sigma_IN = mult_sigma_basis_anti_identity(size);
+    encoded_polynomial_t *encoded_pol1 = complex_vector_encode(complex_vector1, mult_sigma_IN, scaling_factor);
+    encoded_polynomial_print(encoded_pol1);
+    encoded_polynomial_t *encoded_pol2 = complex_vector_encode(complex_vector2, mult_sigma_IN, scaling_factor);
+    encoded_polynomial_print(encoded_pol2);
+
+    encoded_polynomial_t *mult = encoded_pol_mult(encoded_pol1, encoded_pol2, scaling_factor);
+    // Sum 1 et 2
+    encoded_polynomial_print(mult);
+
+    // Decode
+    complex_matrix_t *basis_matrix_etoile = sigma_basis_tilde_etoile_init(size);
+    complex_vector_t *recovered_complex_vector1 = recover_vector(mult, basis_matrix_etoile, scaling_factor);
+    complex_vector_print(recovered_complex_vector1);
+
+    complex_vector_free(complex_vector1);
+    complex_vector_free(complex_vector2);
+    complex_vector_free(recovered_complex_vector1);
+    complex_matrix_free(basis_matrix_etoile);
+    complex_matrix_free(mult_sigma_IN);
+    encoded_pol_free(encoded_pol1);
+    encoded_pol_free(encoded_pol2);
+    encoded_pol_free(mult);
+}
+
+void test_encrypt_decrypt()
+{
+    // Encode
+    fprintf(stdout, "MAX INT :%" PRId64 " MIN INT :%" PRId64 "\n", INT64_MAX, INT64_MIN);
+    size_t size = 2;
+    int64_t encoding_precision_factor = 1024;
+    int64_t scaling_factor = 64;
+    complex_vector_t *complex_vector = complex_vector_init(size);
+    complex_vector->vector[0] = 10000.5125;
+    complex_vector->vector[1] = conjf(10000.5125);
+    complex_vector_print(complex_vector);
+
+    complex_matrix_t *mult_sigma_IN = mult_sigma_basis_anti_identity(size);
+    encoded_polynomial_t *encoded_pol = complex_vector_encode(complex_vector, mult_sigma_IN, encoding_precision_factor);
+    encoded_polynomial_print(encoded_pol);
+
+    // Encrypt
+    polynomial_t *secret_key = key_generation(size);
+
+    fprintf(stdout, " Key : \n");
+    polynomial_print(secret_key);
+    int64_t modulo = INT64_MAX;
+    ciphered_t *c = encrypt(encoded_pol, secret_key, modulo, scaling_factor);
+    cipher_print(c);
+
+    // Decrypt
+    encoded_polynomial_t *scaled_M = decrypt(c, secret_key, modulo, scaling_factor);
+    fprintf(stdout, "Polynome after decryption : \n");
+    encoded_polynomial_print(scaled_M);
+
+    // Decode
+    complex_matrix_t *basis_matrix_etoile = sigma_basis_tilde_etoile_init(size);
+    complex_vector_t *recovered_complex_vector = recover_vector(scaled_M, basis_matrix_etoile, encoding_precision_factor);
+    complex_vector_print(recovered_complex_vector);
+
+    complex_vector_free(complex_vector);
+    complex_matrix_free(mult_sigma_IN);
+    encoded_pol_free(encoded_pol);
+    polynomial_free(secret_key);
+    cipher_free(c);
+    encoded_pol_free(scaled_M);
+    complex_matrix_free(basis_matrix_etoile);
+    complex_vector_free(recovered_complex_vector);
+}
+
+void test_encrypt_add_cipher()
+{
+    // encoding
+    printf("TEST ENCRYPTED ADDITION \n");
+    size_t size = 2;
+    int64_t encoding_precision_factor = 512;
+    int64_t scaling_factor = 256;
+    complex_vector_t *complex_vector1 = complex_vector_init(size);
+    complex_vector1->vector[0] = 3.5;
+    complex_vector1->vector[1] = conjf(3.5);
+    fprintf(stdout, "First vector : \n");
+    complex_vector_print(complex_vector1);
+
+    complex_vector_t *complex_vector2 = complex_vector_init(size);
+    complex_vector2->vector[0] = -3.5;
+    complex_vector2->vector[1] = conjf(-3.5);
+    fprintf(stdout, "Second vector : \n");
+    complex_vector_print(complex_vector2);
+
+    complex_matrix_t *mult_sigma_IN = mult_sigma_basis_anti_identity(size);
+    encoded_polynomial_t *encoded_pol1 = complex_vector_encode(complex_vector1, mult_sigma_IN, encoding_precision_factor);
+    fprintf(stdout, "First encoded vector : \n");
+    encoded_polynomial_print(encoded_pol1);
+    encoded_polynomial_t *encoded_pol2 = complex_vector_encode(complex_vector2, mult_sigma_IN, encoding_precision_factor);
+    fprintf(stdout, "Second encoded vector : \n");
+    encoded_polynomial_print(encoded_pol2);
+
+    // Encrypting
+    polynomial_t *secret_key = key_generation(size);
+
+    fprintf(stdout, " Key : \n");
+    polynomial_print(secret_key);
+    int64_t modulo = INT64_MAX;
+    ciphered_t *c1 = encrypt(encoded_pol1, secret_key, modulo, scaling_factor);
+    ciphered_t *c2 = encrypt(encoded_pol2, secret_key, modulo, scaling_factor);
+    fprintf(stdout, "First ciphered vector : \n");
+    cipher_print(c1);
+
+    fprintf(stdout, "Second ciphered vector : \n");
+    cipher_print(c2);
+
+    // Addition :
+    ciphered_t *sum = cipher_init(size);
+    ckks_add_cipher_cipher(sum, c1, c2, modulo);
+    fprintf(stdout, "SUM ");
+    cipher_print(sum);
+
+    // Decrypting
+    encoded_polynomial_t *scaled_M = decrypt(sum, secret_key, modulo, scaling_factor);
+    fprintf(stdout, "Sum after decryption : \n");
+    encoded_polynomial_print(scaled_M);
+
+    // Decoding
+    complex_matrix_t *basis_matrix_etoile = sigma_basis_tilde_etoile_init(size);
+    complex_vector_t *recovered_complex_vector = recover_vector(scaled_M, basis_matrix_etoile, encoding_precision_factor);
+    fprintf(stdout, "Recovered vector");
+    complex_vector_print(recovered_complex_vector);
+
+    //Free later
+}
+
+void test_encrypt_add_plain()
+{
+    // encoding
+    printf("TEST ENCRYPTED ADDITION \n");
+    size_t size = 2;
+    int64_t encoding_precision_factor = 512;
+    int64_t scaling_factor = 256;
+    complex_vector_t *complex_vector1 = complex_vector_init(size);
+    complex_vector1->vector[0] = 3.5;
+    complex_vector1->vector[1] = conjf(3.5);
+    fprintf(stdout, "First vector : \n");
+    complex_vector_print(complex_vector1);
+
+    complex_vector_t *complex_vector2 = complex_vector_init(size);
+    complex_vector2->vector[0] = 10;
+    complex_vector2->vector[1] = conjf(10);
+    fprintf(stdout, "Second vector : \n");
+    complex_vector_print(complex_vector2);
+
+    complex_matrix_t *mult_sigma_IN = mult_sigma_basis_anti_identity(size);
+    encoded_polynomial_t *encoded_pol1 = complex_vector_encode(complex_vector1, mult_sigma_IN, encoding_precision_factor);
+    fprintf(stdout, "First encoded vector : \n");
+    encoded_polynomial_print(encoded_pol1);
+    encoded_polynomial_t *encoded_pol2 = complex_vector_encode(complex_vector2, mult_sigma_IN, encoding_precision_factor);
+    fprintf(stdout, "Second encoded vector : \n");
+    encoded_polynomial_print(encoded_pol2);
+
+    // Encrypting
+    polynomial_t *secret_key = key_generation(size);
+
+    fprintf(stdout, " Key : \n");
+    polynomial_print(secret_key);
+    int64_t modulo = INT64_MAX;
+    ciphered_t *c1 = encrypt(encoded_pol1, secret_key, modulo, scaling_factor);
+    fprintf(stdout, "First ciphered vector : \n");
+    cipher_print(c1);
+
+    // Addition :
+    ciphered_t *sum = cipher_init(size);
+    ckks_add_cipher_plain(sum, c1, encoded_pol2, modulo, scaling_factor);
+    fprintf(stdout, "SUM ");
+    cipher_print(sum);
+
+    // Decrypting
+    encoded_polynomial_t *scaled_M = decrypt(sum, secret_key, modulo, scaling_factor);
+    fprintf(stdout, "Sum after decryption : \n");
+    encoded_polynomial_print(scaled_M);
+
+    // Decoding
+    complex_matrix_t *basis_matrix_etoile = sigma_basis_tilde_etoile_init(size);
+    complex_vector_t *recovered_complex_vector = recover_vector(scaled_M, basis_matrix_etoile, encoding_precision_factor);
+    fprintf(stdout, "Recovered vector");
+    complex_vector_print(recovered_complex_vector);
+
+    //Free later
+}

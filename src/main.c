@@ -5,7 +5,8 @@ int main(int argc, char *argv[])
 {
     srand(time(NULL));
 
-    test_encrypt_decrypt();
+    
+    test_encrypt_add_plain();
 
     
     user_parameters_t *user_parameters = parser_io(argc, argv);

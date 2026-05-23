@@ -4,6 +4,7 @@
 #include "parser_io.h"
 #include "CKKS_encoding.h"
 #include "encrypt.h"
+#include "test.h"
 #define IMAGES_TRAIN_PATH "./dataset/train-images.idx3-ubyte"
 #define IMAGES_TEST_PATH "./dataset/t10k-images.idx3-ubyte"
 #define LABELS_TRAIN_PATH "./dataset/train-labels.idx1-ubyte"
