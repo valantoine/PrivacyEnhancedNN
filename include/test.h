@@ -20,4 +20,6 @@ extern void test_encrypt_mult_plain();
 
 extern void test_encrypt_mult_cipher();
 
+extern void tst_mult_consec();
+
 #endif /*TEST_H*/

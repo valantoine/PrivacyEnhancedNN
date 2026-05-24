@@ -139,7 +139,7 @@ ciphered_t *encrypt(encoded_polynomial_t *scaled_M, polynomial_t *secret_key, mp
     // fprintf(stdout, "E : \n");
     // polynomial_print(E);
 
-    polynomial_t *prod = polynomial_mult_modulo(A, secret_key, modulo); // -A * S
+    polynomial_t *prod = polynomial_mult_modulo(A, secret_key, modulo); // A * S
     if (prod == NULL)
     {
         return NULL;

@@ -429,3 +429,19 @@ void polynomial_add_modulo(polynomial_t *pol1, const polynomial_t *pol2, mpz_t m
         mpz_center_mod(pol1->coeffs[i], pol1->coeffs[i], modulo);
     }
 }
+
+void polynomial_eval_modulo(polynomial_t *pol, mpz_t modulo)
+{
+    for (size_t i = 0; i < pol->degree; i++)
+    {
+        mpz_center_mod(pol->coeffs[i], pol->coeffs[i], modulo);
+    }
+}
+
+void encoded_polynomial_eval_modulo(encoded_polynomial_t *pol, mpz_t modulo)
+{
+    for (size_t i = 0; i < pol->size; i++)
+    {
+        mpz_center_mod(pol->coeffs[i], pol->coeffs[i], modulo);
+    }
+}

@@ -58,4 +58,8 @@ extern void polynomial_add_modulo(polynomial_t *pol1, const polynomial_t *pol2, 
 
 extern void mpz_center_mod(mpz_t result, mpz_t a, mpz_t q);
 
+extern void polynomial_eval_modulo(polynomial_t *pol, mpz_t modulo);
+
+extern void encoded_polynomial_eval_modulo(encoded_polynomial_t *pol, mpz_t modulo);
+
 #endif /*POLYNOMIAL_OPERATIONS_H*/
