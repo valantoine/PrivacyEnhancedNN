@@ -19,7 +19,7 @@ typedef struct
 
 typedef struct
 {
-    int64_t *coeffs; //coeffs need to be in another type like mpz_t
+    mpz_t *coeffs; //coeffs need to be in another type like mpz_t
     size_t size;
 } encoded_polynomial_t;
 

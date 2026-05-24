@@ -18,4 +18,6 @@ extern void test_encrypt_add_plain();
 
 extern void test_encrypt_mult_plain();
 
+extern void test_encrypt_mult_cipher();
+
 #endif /*TEST_H*/

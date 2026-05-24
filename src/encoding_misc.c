@@ -1,6 +1,5 @@
 #include "encoding_misc.h"
 
-
 complex_vector_t *complex_vector_init(size_t size)
 {
     complex_vector_t *cv = malloc(sizeof(complex_vector_t));
@@ -58,12 +57,17 @@ encoded_polynomial_t *encoded_pol_init(size_t size)
         fprintf(stderr, "encoding : Failed to allocate");
         return NULL;
     }
-    pol->coeffs = calloc(size, sizeof(int64_t) * size);
+    pol->coeffs = malloc(sizeof(mpz_t) * size);
     if (pol->coeffs == NULL)
     {
 
         fprintf(stderr, "encoding : Failed to allocate");
+        free(pol);
         return NULL;
+    }
+    for (size_t i = 0; i < size; i++)
+    {
+        mpz_init(pol->coeffs[i]);
     }
     pol->size = size;
     return pol;
@@ -71,6 +75,10 @@ encoded_polynomial_t *encoded_pol_init(size_t size)
 
 void encoded_pol_free(encoded_polynomial_t *pol)
 {
+    for (size_t i = 0; i < pol->size; i++)
+    {
+        mpz_clear(pol->coeffs[i]);
+    }
     free(pol->coeffs);
     free(pol);
 }
@@ -90,7 +98,7 @@ void encoded_polynomial_print(encoded_polynomial_t *pol)
 {
     for (size_t i = 0; i < pol->size; i++)
     {
-        fprintf(stdout, "%" PRId64 "*X^%zu + ", pol->coeffs[i], i);
+        gmp_printf("%Zd *X^%zu + ", pol->coeffs[i], i);
     }
     fprintf(stdout, "\n");
 }
@@ -99,8 +107,6 @@ void float_complex_print(float complex z)
 {
     fprintf(stdout, "%f + I*%f ", crealf(z), cimagf(z));
 }
-
-
 
 void complex_matrix_print(complex_matrix_t *complex_matrix)
 {

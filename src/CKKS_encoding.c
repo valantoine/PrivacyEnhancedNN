@@ -94,7 +94,7 @@ complex_matrix_t *mult_sigma_basis_anti_identity(size_t size)
     return mult;
 }
 
-encoded_polynomial_t *complex_vector_encode(complex_vector_t *vector, complex_matrix_t *precomputed_sigma_basis, int64_t scaling_factor)
+encoded_polynomial_t *complex_vector_encode(complex_vector_t *vector, complex_matrix_t *precomputed_sigma_basis, mpz_t scaling_factor)
 {
     encoded_polynomial_t *pol = encoded_pol_init(vector->size);
     if (pol == NULL)
@@ -107,11 +107,11 @@ encoded_polynomial_t *complex_vector_encode(complex_vector_t *vector, complex_ma
         float temp = 0;
         for (size_t j = 0; j < vector->size; j++)
         {
-            temp += complex_matrix_get(precomputed_sigma_basis, i, j) * vector->vector[j]; // Should not overflow coeff modulus chosen for polynomial by definition
+            temp += complex_matrix_get(precomputed_sigma_basis, i, j) * vector->vector[j];
         }
         temp /= vector->size;
-        temp *= scaling_factor;
-        pol->coeffs[i] = roundf(temp);
+        temp *= mpz_get_ui(scaling_factor); //Precision factor should be less than 2^64 ! 
+        mpz_set_d(pol->coeffs[i], roundf(temp));
     }
     return pol;
 }
@@ -138,7 +138,7 @@ complex_matrix_t *sigma_basis_tilde_etoile_init(size_t size)
     return basis_matrix_etoile;
 }
 
-complex_vector_t *recover_vector(encoded_polynomial_t *encoded_pol, complex_matrix_t *sigma_basis_etoile, int64_t scaling_factor)
+complex_vector_t *recover_vector(encoded_polynomial_t *encoded_pol, complex_matrix_t *sigma_basis_etoile, mpz_t scaling_factor)
 {
     complex_vector_t *recovered = complex_vector_init(encoded_pol->size);
     if (recovered == NULL)
@@ -152,7 +152,7 @@ complex_vector_t *recover_vector(encoded_polynomial_t *encoded_pol, complex_matr
     }
     for (size_t i = 0; i < encoded_pol->size; i++)
     {
-        temp->vector[i] = (float complex)encoded_pol->coeffs[i] / scaling_factor;
+        temp->vector[i] = (float complex)mpz_get_si(encoded_pol->coeffs[i]) / mpz_get_ui(scaling_factor);  //i.e plain text size must be in [-2^63, 2^63]
     }
     for (size_t i = 0; i < encoded_pol->size; i++)
     {
@@ -164,4 +164,3 @@ complex_vector_t *recover_vector(encoded_polynomial_t *encoded_pol, complex_matr
     complex_vector_free(temp);
     return recovered;
 }
-

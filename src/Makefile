@@ -1,6 +1,6 @@
 CFLAGS= -std=c11 -Wall -Wextra -Werror -Wpedantic -g -MMD -O3 -lm -ffast-math
 CPPFLAGS=-I../include -DDEBUG 
-LDFLAGS=-lm
+LDFLAGS=-lm -lgmp
 
 
 BINDIR = ../

@@ -12,12 +12,12 @@
 // Poorly optimized
 extern complex_matrix_t *mult_sigma_basis_anti_identity(size_t size);
 
-extern encoded_polynomial_t *complex_vector_encode(complex_vector_t *vector, complex_matrix_t *precomputed_sigma_basis, int64_t scaling_factor);
+extern encoded_polynomial_t *complex_vector_encode(complex_vector_t *vector, complex_matrix_t *precomputed_sigma_basis, mpz_t scaling_factor);
 
 extern complex_matrix_t *sigma_basis_tilde_etoile_init(size_t size);
 
 
-extern complex_vector_t *recover_vector(encoded_polynomial_t *encoded_pol, complex_matrix_t *sigma_basis_etoile, int64_t scaling_factor);
+extern complex_vector_t *recover_vector(encoded_polynomial_t *encoded_pol, complex_matrix_t *sigma_basis_etoile, mpz_t scaling_factor);
 
 
 
