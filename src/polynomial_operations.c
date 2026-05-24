@@ -35,6 +35,23 @@ polynomial_t *polynomial_init(size_t size)
     return pol;
 }
 
+void polynomial_init_in_place(polynomial_t *pol, size_t size)
+{
+    pol->coeffs = malloc(sizeof(mpz_t) * size);
+    if (pol->coeffs == NULL)
+    {
+        fprintf(stderr, "encoding : Failed to allocate");
+        free(pol);
+        return;
+    }
+    for (size_t i = 0; i < size; i++)
+    {
+        mpz_init(pol->coeffs[i]); //bored to error handling this
+    }
+    pol->degree = size;
+    return;
+}
+
 void polynomial_free(polynomial_t *pol)
 {
     for (size_t i = 0; i < pol->degree; i++)

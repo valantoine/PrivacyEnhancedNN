@@ -4,14 +4,15 @@ void relu(forward_vector_t *vector)
 {
     for (int i = 0; i < NB_NEURONS; i++)
     {
-        if (vector->Z1[i] > 0)
-        {
-            vector->A1[i] = vector->Z1[i];
-        }
-        else
-        {
-            vector->A1[i] = 0;
-        }
+        // if (vector->Z1[i] > 0)
+        // {
+        //     vector->A1[i] = vector->Z1[i];
+        // }
+        // else
+        // {
+        //     vector->A1[i] = 0;
+        // }
+        vector->A1[i] = vector->Z1[i] * vector->Z1[i];
     }
 }
 
@@ -78,14 +79,16 @@ void feed_forward(forward_matrix_t *output, const nn_parameters_t *parameters, c
 
 float relu_deriv(const float f)
 {
-    if (f >= 0)
-    {
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
+    // if (f >= 0)
+    // {
+    //     return 1;
+    // }
+    // else
+    // {
+    //     return 0;
+    // }
+    float z = 2*f;
+    return z;
 }
 
 void back_propagation(const forward_matrix_t *output, const dataset_t *dataset, const nn_parameters_t *parameters, back_matrix_t *back_parameters, gradients_t *gradients)

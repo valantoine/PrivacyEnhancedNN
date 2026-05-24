@@ -5,9 +5,9 @@
 
 #include <string.h>
 
-#define LEARNING_RATE 0.1
+#define LEARNING_RATE 0.01
 #define NB_EPOCHS 10
-#define BATCH_SIZE 64
+#define BATCH_SIZE 128
 
 
 // Output of forward pass for only one feature

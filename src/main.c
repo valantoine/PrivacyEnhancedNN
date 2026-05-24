@@ -6,7 +6,6 @@ int main(int argc, char *argv[])
     srand(time(NULL));
     
 
-    tst_mult_consec();
     user_parameters_t *user_parameters = parser_io(argc, argv);
     if (user_parameters == NULL)
     {

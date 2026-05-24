@@ -19,7 +19,7 @@ typedef struct
 
 typedef struct
 {
-    mpz_t *coeffs; //coeffs need to be in another type like mpz_t
+    mpz_t *coeffs; 
     size_t size;
 } encoded_polynomial_t;
 
@@ -48,6 +48,10 @@ extern void complex_matrix_print(complex_matrix_t *complex_matrix);
 
 extern void complex_vector_print(complex_vector_t *vector);
 
+extern void encoded_pol_init_in_place(encoded_polynomial_t *pol, size_t size);
 
+extern void float_to_complex_vector(float a, complex_vector_t *v);
+
+extern float complex_vector_to_float(complex_vector_t *v);
 
 #endif /*ENCODING_MISC_H*/

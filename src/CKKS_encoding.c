@@ -110,7 +110,7 @@ encoded_polynomial_t *complex_vector_encode(complex_vector_t *vector, complex_ma
             temp += complex_matrix_get(precomputed_sigma_basis, i, j) * vector->vector[j];
         }
         temp /= vector->size;
-        temp *= mpz_get_ui(scaling_factor); //Precision factor should be less than 2^64 ! 
+        temp *= mpz_get_ui(scaling_factor); // Precision factor should be less than 2^64 !
         mpz_set_d(pol->coeffs[i], roundf(temp));
     }
     return pol;
@@ -152,7 +152,7 @@ complex_vector_t *recover_vector(encoded_polynomial_t *encoded_pol, complex_matr
     }
     for (size_t i = 0; i < encoded_pol->size; i++)
     {
-        temp->vector[i] = (float complex)mpz_get_si(encoded_pol->coeffs[i]) / mpz_get_ui(scaling_factor);  //i.e plain text size must be in [-2^63, 2^63]
+        temp->vector[i] = (float complex)mpz_get_si(encoded_pol->coeffs[i]) / mpz_get_ui(scaling_factor); // i.e plain text size must be in [-2^63, 2^63]
     }
     for (size_t i = 0; i < encoded_pol->size; i++)
     {
@@ -163,4 +163,28 @@ complex_vector_t *recover_vector(encoded_polynomial_t *encoded_pol, complex_matr
     }
     complex_vector_free(temp);
     return recovered;
+}
+
+void float_encode(const float a, complex_vector_t *v, encoded_polynomial_t *encoded, complex_matrix_t *precomputed_sigma_basis, const mpz_t scaling_factor)
+{
+    float_to_complex_vector(a, v);
+    for (size_t i = 0; i < v->size; i++)
+    {
+        float temp = 0;
+        for (size_t j = 0; j < v->size; j++)
+        {
+            temp += complex_matrix_get(precomputed_sigma_basis, i, j) * v->vector[j];
+        }
+        temp /= v->size;
+        temp *= mpz_get_ui(scaling_factor); // Precision factor should be less than 2^64 !
+        mpz_set_d(encoded->coeffs[i], roundf(temp));
+    }
+}
+
+float float_decode(encoded_polynomial_t *encoded_pol, complex_matrix_t *sigma_basis_etoile, mpz_t scaling_factor)
+{
+    complex_vector_t *recovered = recover_vector(encoded_pol, sigma_basis_etoile, scaling_factor); // error handling
+    float a = complex_vector_to_float(recovered);
+    complex_vector_free(recovered);
+    return a;
 }

@@ -33,4 +33,10 @@ extern polynomial_t *A_generation(size_t size, gmp_randstate_t state, mpz_t modu
 
 extern polynomial_t *E_generation(size_t size);
 
+extern void cipher_init_in_place(ciphered_t *c, size_t size);
+
+extern void encrypt_in_place(ciphered_t *c, encoded_polynomial_t *scaled_M, polynomial_t *secret_key, mpz_t modulo, mpz_t scaling_factor, gmp_randstate_t state);
+
+extern void decrypt_in_place(encoded_polynomial_t *decrypted, ciphered_t *cipher, polynomial_t *secret_key, mpz_t modulo, mpz_t scaling_factor);
+
 #endif /*KEY_GENERATION_H*/

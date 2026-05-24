@@ -83,6 +83,21 @@ ciphered_t *cipher_init(size_t size)
     return c;
 }
 
+void cipher_init_in_place(ciphered_t *c, size_t size)
+{
+    c->A = polynomial_init(size);
+    if (c->A == NULL)
+    {
+        return;
+    }
+    c->B = encoded_pol_init(size);
+    if (c->B == NULL)
+    {
+        polynomial_free(c->A);
+        return;
+    }
+}
+
 void cipher_free(ciphered_t *c)
 {
     polynomial_free(c->A);
@@ -94,7 +109,7 @@ void cipher_copy_A(ciphered_t *c, polynomial_t *A_to_copy)
 {
     for (size_t i = 0; i < A_to_copy->degree; i++)
     {
-        mpz_set(c->A->coeffs[i] , A_to_copy->coeffs[i]);
+        mpz_set(c->A->coeffs[i], A_to_copy->coeffs[i]);
     }
     c->A->degree = A_to_copy->degree;
 }
@@ -103,7 +118,7 @@ void cipher_copy_B(ciphered_t *c, encoded_polynomial_t *B_to_copy)
 {
     for (size_t i = 0; i < B_to_copy->size; i++)
     {
-       mpz_set(c->B->coeffs[i] , B_to_copy->coeffs[i]);
+        mpz_set(c->B->coeffs[i], B_to_copy->coeffs[i]);
     }
     c->B->size = B_to_copy->size;
 }
@@ -237,4 +252,71 @@ encoded_polynomial_t *decrypt(ciphered_t *cipher, polynomial_t *secret_key, mpz_
     polynomial_free(prod);
 
     return scaled_M;
+}
+
+void encrypt_in_place(ciphered_t *c, encoded_polynomial_t *scaled_M, polynomial_t *secret_key, mpz_t modulo, mpz_t scaling_factor, gmp_randstate_t state)
+{
+    encoded_pol_scalar_mult(scaled_M, scaling_factor);
+    polynomial_t *A = A_generation(scaled_M->size, state, modulo); // MAsk generation
+    if (A == NULL)
+    {
+        return;
+    }
+    cipher_copy_A(c, A);
+    polynomial_t *E = E_generation(scaled_M->size); // Error generation
+    if (E == NULL)
+    {
+        return;
+    }
+    // fprintf(stdout, "E : \n");
+    // polynomial_print(E);
+
+    polynomial_t *prod = polynomial_mult_modulo(A, secret_key, modulo); // A * S
+    if (prod == NULL)
+    {
+        return;
+    }
+
+    // Adding error in M, ATTENTION error E should not wrap modulo and every |coefficient| should be less than scaling_factor / 2
+    encoded_pol_add_polynomial_modulo(scaled_M, E, modulo);
+
+    fprintf(stdout, "Polynome avec erreur encryption :\n ");
+    encoded_polynomial_print(scaled_M);
+
+    // Adding secret mask, it can wrap modulo since we sub it at decryption
+    mpz_t neg;
+    mpz_init_set_si(neg, -1);
+    polynomial_scalar_mult(prod, neg);
+
+    encoded_pol_add_polynomial_modulo(scaled_M, prod, modulo);
+
+    cipher_copy_B(c, scaled_M);
+    polynomial_free(A);
+    polynomial_free(E);
+    polynomial_free(prod);
+    mpz_clear(neg);
+}
+
+void decrypt_in_place(encoded_polynomial_t *decrypted, ciphered_t *cipher, polynomial_t *secret_key, mpz_t modulo, mpz_t scaling_factor)
+{
+    B_copy_cipher(cipher, decrypted);
+    polynomial_t *prod = polynomial_mult_modulo(cipher->A, secret_key, modulo); // A * S
+    if (prod == NULL)
+    {
+        return;
+    }
+
+    // Removing the secret mask from the ciphered text --> We recovered M_scaled + E
+    encoded_pol_add_polynomial_modulo(decrypted, prod, modulo);
+
+    fprintf(stdout, "Polynome avec erreur decryption :\n ");
+    encoded_polynomial_print(decrypted);
+
+    // If E is smaller than scaling_factor / 2, rounding to the nearest multiple of scaling_factor should give us M_scaled
+    round_encoded_pol_to_nearest_multiple(decrypted, scaling_factor);
+
+    encoded_pol_scalar_div_exact(decrypted, scaling_factor);
+    polynomial_free(prod);
+
+
 }

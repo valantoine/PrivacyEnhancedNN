@@ -62,4 +62,8 @@ extern void polynomial_eval_modulo(polynomial_t *pol, mpz_t modulo);
 
 extern void encoded_polynomial_eval_modulo(encoded_polynomial_t *pol, mpz_t modulo);
 
+extern void encoded_pol_clear(encoded_polynomial_t *pol, size_t i);
+
+extern void polynomial_init_in_place(polynomial_t *pol, size_t size);
+
 #endif /*POLYNOMIAL_OPERATIONS_H*/

@@ -48,6 +48,14 @@ void complex_matrix_free(complex_matrix_t *cm)
     free(cm);
 }
 
+void encoded_pol_clear(encoded_polynomial_t *pol, size_t i)
+{
+    for (size_t j = 0; j < i; j++)
+    {
+        mpz_clear(pol->coeffs[i]);
+    }
+}
+
 encoded_polynomial_t *encoded_pol_init(size_t size)
 {
     encoded_polynomial_t *pol = malloc(sizeof(encoded_polynomial_t));
@@ -71,6 +79,23 @@ encoded_polynomial_t *encoded_pol_init(size_t size)
     }
     pol->size = size;
     return pol;
+}
+
+void encoded_pol_init_in_place(encoded_polynomial_t *pol, size_t size)
+{
+    pol->coeffs = malloc(sizeof(mpz_t) * size);
+    if (pol->coeffs == NULL)
+    {
+        fprintf(stderr, "encoding : Failed to allocate");
+        free(pol);
+        return;
+    }
+    for (size_t i = 0; i < size; i++)
+    {
+        mpz_init(pol->coeffs[i]);
+    }
+    pol->size = size;
+    return;
 }
 
 void encoded_pol_free(encoded_polynomial_t *pol)
@@ -129,4 +154,15 @@ void complex_vector_print(complex_vector_t *vector)
         fprintf(stdout, " %f + I* %f,", crealf(vector->vector[i]), cimagf(vector->vector[i]));
     }
     fprintf(stdout, "}\n");
+}
+
+void float_to_complex_vector(float a, complex_vector_t *v)
+{
+    v->vector[0] = (float complex) a + 0.0 * I;
+    v->vector[v->size / 2] = conj(v->vector[0]);
+}
+
+float complex_vector_to_float(complex_vector_t *v)
+{
+    return crealf(v->vector[0]);
 }
