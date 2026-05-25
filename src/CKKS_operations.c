@@ -59,10 +59,14 @@ ciphered_t *ckks_mult_cipher_plain(const ciphered_t *c, encoded_polynomial_t *p,
     // Reduce multiplicative level by 1
     div_and_round_polynomial(mult->A, scaling_factor);
     div_and_round_encoded_polynomial(mult->B, scaling_factor);
-    mpz_divexact(modulo, modulo, scaling_factor); //needs to be outside after
-    polynomial_eval_modulo(mult->A, modulo);
-    encoded_polynomial_eval_modulo(mult->B, modulo);
+
+    mpz_t mod_copy;
+    mpz_init_set(mod_copy, modulo);
+    mpz_divexact(mod_copy, mod_copy, scaling_factor); 
+    polynomial_eval_modulo(mult->A, mod_copy);
+    encoded_polynomial_eval_modulo(mult->B, mod_copy);
     encoded_pol_free(mult_A);
+    mpz_clear(mod_copy);
     return mult;
 }
 
@@ -204,9 +208,12 @@ ciphered_t *ckks_mult_cipher_cipher(ciphered_t *c1, ciphered_t *c2, mpz_t modulo
     cipher_copy_A(mult, D1);
     cipher_copy_B(mult, D2_B_prod);
 
-    mpz_divexact(modulo, modulo, scaling_factor); //needs to be outside after
-    polynomial_eval_modulo(mult->A, modulo);
-    encoded_polynomial_eval_modulo(mult->B, modulo);
+    //Eval rescaled polynomials with correct rescaled modulo
+    mpz_t mod_copy;
+    mpz_init_set(mod_copy, modulo);
+    mpz_divexact(mod_copy, mod_copy, scaling_factor); 
+    polynomial_eval_modulo(mult->A, mod_copy);
+    encoded_polynomial_eval_modulo(mult->B, mod_copy);
 
     encoded_pol_free(D0);
     encoded_pol_free(temp1);
@@ -216,5 +223,7 @@ ciphered_t *ckks_mult_cipher_cipher(ciphered_t *c1, ciphered_t *c2, mpz_t modulo
     polynomial_free(D2_A_prod);
     encoded_pol_free(D2_B_prod);
     mpz_clear(g_times_q);
+    mpz_clear(mod_copy);
     return mult;
 }
+

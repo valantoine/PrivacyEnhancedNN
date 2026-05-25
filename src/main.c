@@ -4,8 +4,9 @@
 int main(int argc, char *argv[])
 {
     srand(time(NULL));
-    
-
+    gmp_randstate_t state;
+    gmp_randinit_mt(state);
+    gmp_randseed_ui(state, time(NULL));
     user_parameters_t *user_parameters = parser_io(argc, argv);
     if (user_parameters == NULL)
     {
@@ -46,6 +47,7 @@ int main(int argc, char *argv[])
     }
     if (user_parameters->mode == PREDICT_MODE)
     {
+
         nn_parameters_t *parameters = nn_parameters_get(user_parameters->input_parameters);
         if (parameters == NULL)
         {
@@ -54,24 +56,40 @@ int main(int argc, char *argv[])
             free(user_parameters);
             return 0;
         }
-        for (uint8_t i = 0; i < user_parameters->predict_number; i++)
+        if (user_parameters->privacy == PRIVACY_YES)
         {
-            uint8_t *prediction = predict_image(test_dataset, parameters);
-            if (prediction == NULL)
+            polynomial_t *secret_key = key_generation(POL_DEGREE, state);
+            fprintf(stdout, " Key : \n");
+            polynomial_print(secret_key);
+            for (uint8_t i = 0; i < user_parameters->predict_number; i++)
             {
-                dataset_free(train_dataset);
-                dataset_free(test_dataset);
-                free(parameters);
-                free(user_parameters);
-                return 0;
+                uint8_t prediction = predict_image_private(test_dataset, parameters, secret_key, 0, state);
+                fprintf(stdout, "\n Predicted label : %" PRIu8 "\n\n\n", prediction);
             }
-            fprintf(stdout, "\n Predicted label : %" PRIu8 "\n\n\n", *prediction);
-            free(prediction);
         }
-        free(parameters);
+        else
+        {
+            for (uint8_t i = 0; i < user_parameters->predict_number; i++)
+            {
+
+                uint8_t *prediction = predict_image(test_dataset, parameters);
+                if (prediction == NULL)
+                {
+                    dataset_free(train_dataset);
+                    dataset_free(test_dataset);
+                    free(parameters);
+                    free(user_parameters);
+                    return 0;
+                }
+                fprintf(stdout, "\n Predicted label : %" PRIu8 "\n\n\n", *prediction);
+                free(prediction);
+            }
+            free(parameters);
+        }
     }
     dataset_free(train_dataset);
     dataset_free(test_dataset);
     free(user_parameters);
+    gmp_randclear(state);
     return 1;
 }

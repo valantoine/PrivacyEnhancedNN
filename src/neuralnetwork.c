@@ -381,6 +381,8 @@ uint8_t *predict_image(dataset_t *test_dataset, const nn_parameters_t *parameter
     test_dataset->size = 1;
     fprintf(stdout, "Image picked : \n");
     image_print(&test_dataset->images[0], stdout);
+
+    
     feed_forward(&output, parameters, test_dataset);
 
     *prediction = get_prediction(output.vectors[0]);

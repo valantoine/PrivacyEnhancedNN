@@ -163,8 +163,8 @@ ciphered_t *encrypt(encoded_polynomial_t *scaled_M, polynomial_t *secret_key, mp
     // Adding error in M, ATTENTION error E should not wrap modulo and every |coefficient| should be less than scaling_factor / 2
     encoded_pol_add_polynomial_modulo(scaled_M, E, modulo);
 
-    fprintf(stdout, "Polynome avec erreur encryption :\n ");
-    encoded_polynomial_print(scaled_M);
+    // fprintf(stdout, "Polynome avec erreur encryption :\n ");
+    // encoded_polynomial_print(scaled_M);
 
     // Adding secret mask, it can wrap modulo since we sub it at decryption
     mpz_t neg;
@@ -242,8 +242,8 @@ encoded_polynomial_t *decrypt(ciphered_t *cipher, polynomial_t *secret_key, mpz_
     // Removing the secret mask from the ciphered text --> We recovered M_scaled + E
     encoded_pol_add_polynomial_modulo(scaled_M, prod, modulo);
 
-    fprintf(stdout, "Polynome avec erreur decryption :\n ");
-    encoded_polynomial_print(scaled_M);
+    // fprintf(stdout, "Polynome avec erreur decryption :\n ");
+    // encoded_polynomial_print(scaled_M);
 
     // If E is smaller than scaling_factor / 2, rounding to the nearest multiple of scaling_factor should give us M_scaled
     round_encoded_pol_to_nearest_multiple(scaled_M, scaling_factor);
@@ -280,8 +280,8 @@ void encrypt_in_place(ciphered_t *c, encoded_polynomial_t *scaled_M, polynomial_
     // Adding error in M, ATTENTION error E should not wrap modulo and every |coefficient| should be less than scaling_factor / 2
     encoded_pol_add_polynomial_modulo(scaled_M, E, modulo);
 
-    fprintf(stdout, "Polynome avec erreur encryption :\n ");
-    encoded_polynomial_print(scaled_M);
+    // fprintf(stdout, "Polynome avec erreur encryption :\n ");
+    // encoded_polynomial_print(scaled_M);
 
     // Adding secret mask, it can wrap modulo since we sub it at decryption
     mpz_t neg;
@@ -309,8 +309,8 @@ void decrypt_in_place(encoded_polynomial_t *decrypted, ciphered_t *cipher, polyn
     // Removing the secret mask from the ciphered text --> We recovered M_scaled + E
     encoded_pol_add_polynomial_modulo(decrypted, prod, modulo);
 
-    fprintf(stdout, "Polynome avec erreur decryption :\n ");
-    encoded_polynomial_print(decrypted);
+    // fprintf(stdout, "Polynome avec erreur decryption :\n ");
+    // encoded_polynomial_print(decrypted);
 
     // If E is smaller than scaling_factor / 2, rounding to the nearest multiple of scaling_factor should give us M_scaled
     round_encoded_pol_to_nearest_multiple(decrypted, scaling_factor);

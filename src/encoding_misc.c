@@ -87,7 +87,6 @@ void encoded_pol_init_in_place(encoded_polynomial_t *pol, size_t size)
     if (pol->coeffs == NULL)
     {
         fprintf(stderr, "encoding : Failed to allocate");
-        free(pol);
         return;
     }
     for (size_t i = 0; i < size; i++)
