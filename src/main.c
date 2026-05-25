@@ -56,20 +56,32 @@ int main(int argc, char *argv[])
             free(user_parameters);
             return 0;
         }
+        float accuracy = 0;
+        float startTime;
+        float endTime;
+        float timeElapsed;
+
+        startTime = (float)clock() / CLOCKS_PER_SEC;
         if (user_parameters->privacy == PRIVACY_YES)
         {
             polynomial_t *secret_key = key_generation(POL_DEGREE, state);
             fprintf(stdout, " Key : \n");
             polynomial_print(secret_key);
-            for (uint8_t i = 0; i < user_parameters->predict_number; i++)
+            for (uint16_t i = 0; i < user_parameters->predict_number; i++)
             {
-                uint8_t prediction = predict_image_private(test_dataset, parameters, secret_key, 0, state);
-                fprintf(stdout, "\n Predicted label : %" PRIu8 "\n\n\n", prediction);
+                uint8_t *prediction = predict_image_private(test_dataset, parameters, secret_key, state);
+                fprintf(stdout, "\n Predicted label : %" PRIu8 "\n\n\n", prediction[1]);
+                if (prediction[1] == prediction[0])
+                {
+                    accuracy++;
+                }
+                free(prediction);
             }
+            polynomial_free(secret_key);
         }
         else
         {
-            for (uint8_t i = 0; i < user_parameters->predict_number; i++)
+            for (uint16_t i = 0; i < user_parameters->predict_number; i++)
             {
 
                 uint8_t *prediction = predict_image(test_dataset, parameters);
@@ -81,11 +93,20 @@ int main(int argc, char *argv[])
                     free(user_parameters);
                     return 0;
                 }
-                fprintf(stdout, "\n Predicted label : %" PRIu8 "\n\n\n", *prediction);
+                fprintf(stdout, "\n Predicted label : %" PRIu8 "\n\n\n", prediction[1]);
+                if (prediction[1] == prediction[0])
+                {
+                    accuracy++;
+                }
                 free(prediction);
             }
-            free(parameters);
         }
+        endTime = (float)clock() / CLOCKS_PER_SEC;
+        timeElapsed = endTime - startTime;
+        accuracy /= user_parameters->predict_number;
+        fprintf(stdout, " Accuracy : %f\n", accuracy);
+        fprintf(stdout, "Exec time for %u predictions : %f\n", user_parameters->predict_number, timeElapsed);
+        free(parameters);
     }
     dataset_free(train_dataset);
     dataset_free(test_dataset);

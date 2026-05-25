@@ -87,7 +87,7 @@ float relu_deriv(const float f)
     // {
     //     return 0;
     // }
-    float z = 2*f;
+    float z = 2 * f;
     return z;
 }
 
@@ -229,10 +229,14 @@ void output_vector_print(const forward_vector_t output_vector)
 uint8_t get_prediction(const forward_vector_t output_vector)
 {
     float max = output_vector.A2[0];
+    fprintf(stdout, "Output vector before softmax (used to compare with privacy mode) :\n");
+    fprintf(stdout, " %f ", output_vector.Z2[0]);
     // output_vector_print(output_vector);
     uint8_t index = 0;
+
     for (int i = 1; i < NB_CLASSES; i++)
     {
+        fprintf(stdout, " %f ", output_vector.Z2[i]);
         if (output_vector.A2[i] > max)
         {
             max = output_vector.A2[i];
@@ -362,7 +366,7 @@ uint8_t *predict_image(dataset_t *test_dataset, const nn_parameters_t *parameter
 {
     // Allocating feed forward output memory for one image
     forward_matrix_t output;
-    uint8_t *prediction = (malloc(sizeof(uint8_t)));
+    uint8_t *prediction = (malloc(2 * sizeof(uint8_t)));
     if (prediction == NULL)
     {
         fprintf(stderr, "Failed to allocate prediction");
@@ -382,10 +386,12 @@ uint8_t *predict_image(dataset_t *test_dataset, const nn_parameters_t *parameter
     fprintf(stdout, "Image picked : \n");
     image_print(&test_dataset->images[0], stdout);
 
-    
+    // adding true label to prediction
+    prediction[0] = test_dataset->images[0].label;
+
     feed_forward(&output, parameters, test_dataset);
 
-    *prediction = get_prediction(output.vectors[0]);
+    prediction[1] = get_prediction(output.vectors[0]);
     free(output.vectors);
     test_dataset->images = original_image;
     test_dataset->size = original_size;

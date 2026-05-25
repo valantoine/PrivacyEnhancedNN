@@ -8,7 +8,7 @@ complex_vector_t *complex_vector_init(size_t size)
         fprintf(stderr, "encoding : Failed to allocate");
         return NULL;
     }
-    cv->vector = calloc(size, sizeof(float complex) * size);
+    cv->vector = calloc(size, sizeof(float complex));
     if (cv->vector == NULL)
     {
         fprintf(stderr, "encoding : Failed to allocate");
@@ -32,7 +32,7 @@ complex_matrix_t *complex_matrix_init(size_t size)
         fprintf(stderr, "encoding : Failed to allocate");
         return NULL;
     }
-    cm->matrix = calloc(size * size, sizeof(float complex) * size * size);
+    cm->matrix = calloc(size * size, sizeof(float complex));
     if (cm->matrix == NULL)
     {
         fprintf(stderr, "encoding : Failed to allocate");
@@ -120,11 +120,11 @@ void complex_matrix_set(complex_matrix_t *cm, uint16_t i, uint16_t j, float comp
 
 void encoded_polynomial_print(encoded_polynomial_t *pol)
 {
-    for (size_t i = 0; i < pol->size; i++)
+    for (size_t i = 0; i < pol->size-1; i++)
     {
         gmp_printf("%Zd *X^%zu + ", pol->coeffs[i], i);
     }
-    fprintf(stdout, "\n");
+    gmp_printf("%Zd *X^%zu", pol->coeffs[pol->size-1], pol->size-1);
 }
 
 void float_complex_print(float complex z)

@@ -27,7 +27,7 @@ typedef struct{
     is_privacy_t privacy;
     which_mode_t mode;
     FILE *input_parameters;
-    uint8_t predict_number;
+    uint16_t predict_number;
 } user_parameters_t;
 
 extern user_parameters_t *parser_io(int argc, char *argv[]);

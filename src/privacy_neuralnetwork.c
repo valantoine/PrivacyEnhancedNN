@@ -141,7 +141,58 @@ void ciphered_matrix_set(ciphered_matrix_t *mat, size_t i, size_t j, ciphered_t 
     }
 }
 
-ciphered_matrix_t *encrypt_image(image_t image, polynomial_t *secret_key, int verbose, mpz_t precision_factor, mpz_t scaling_factor, mpz_t modulo_full, gmp_randstate_t state)
+void encoded_matrix_print(encoded_matrix_t *m, FILE *fd)
+{
+    for (size_t i = 0; i < m->row_size; i++)
+    {
+        fprintf(fd, " ");
+        for (size_t j = 0; j < m->col_size; j++)
+        {
+            encoded_polynomial_t *cell = encoded_matrix_get(m, i, j);
+            encoded_polynomial_print(cell);
+            fprintf(fd, " ");
+        }
+    }
+    fprintf(fd, "\n");
+}
+
+void ciphered_matrix_print(ciphered_matrix_t *m, FILE *fd)
+{
+    for (size_t i = 0; i < m->row_size; i++)
+    {
+        fprintf(fd, " ");
+        for (size_t j = 0; j < m->col_size; j++)
+        {
+            ciphered_t *cell = ciphered_matrix_get(m, i, j);
+            cipher_print(cell);
+            fprintf(fd, " ");
+        }
+    }
+    fprintf(fd, "\n");
+}
+
+void decoded_ciphered_matrix_print(ciphered_matrix_t *m, FILE *fd, mpz_t precision_factor)
+{
+    ciphered_t *cell_copy = cipher_init(POL_DEGREE);
+    complex_matrix_t *basis_matrix_etoile = sigma_basis_tilde_etoile_init(POL_DEGREE);
+    for (size_t i = 0; i < m->row_size; i++)
+    {
+        fprintf(fd, " ");
+        for (size_t j = 0; j < m->col_size; j++)
+        {
+            ciphered_t *cell = ciphered_matrix_get(m, i, j);
+            cipher_copy_A(cell_copy, cell->A);
+            cipher_copy_B(cell_copy, cell->B);
+            float decoded = float_decode(cell_copy->B, basis_matrix_etoile, precision_factor);
+            fprintf(fd, "%f ", trunc(decoded));
+        }
+    }
+    complex_matrix_free(basis_matrix_etoile);
+    cipher_free(cell_copy);
+    fprintf(fd, "\n");
+}
+
+ciphered_matrix_t *encrypt_image(image_t image, polynomial_t *secret_key, mpz_t precision_factor, mpz_t scaling_factor, mpz_t modulo_full, gmp_randstate_t state)
 {
     ciphered_matrix_t *c = ciphered_matrix_init(IMAGE_SIZE, 1); // Vector of size 728
     if (c == NULL)
@@ -164,11 +215,8 @@ ciphered_matrix_t *encrypt_image(image_t image, polynomial_t *secret_key, int ve
         encoded_matrix_set(ec, i, 0, cell);
         encoded_pol_free(cell);
     }
-    if (verbose == 1)
-    {
-        printf("Encoded image :\n");
-        // TO DO
-    }
+    // fprintf(stdout, "Encoded image : \n");
+    // encoded_matrix_print(ec, stdout);
 
     // Encrypting vector
     for (int i = 0; i < IMAGE_SIZE; i++)
@@ -177,47 +225,43 @@ ciphered_matrix_t *encrypt_image(image_t image, polynomial_t *secret_key, int ve
         ciphered_matrix_set(c, i, 0, cell);
         cipher_free(cell);
     }
-    if (verbose == 1)
-    {
-        printf("Encypted image :\n");
-        // TO DO
-    }
+    // fprintf(stdout, "Ciphered encoded image : \n");
+    // ciphered_matrix_print(c, stdout);
+
+    fprintf(stdout, "Ciphered decoded image : \n");
+    decoded_ciphered_matrix_print(c, stdout, precision_factor);
+
     encoded_matrix_free(ec);
     complex_matrix_free(precomputed_basis_matrix);
     complex_vector_free(temp);
     return c;
 }
 
-uint8_t decrypt_prediction(ciphered_matrix_t *c, polynomial_t *secret_key, int verbose, mpz_t precision_factor, mpz_t scaling_factor, mpz_t modulo_0)
+uint8_t decrypt_prediction(ciphered_matrix_t *c, polynomial_t *secret_key, mpz_t precision_factor, mpz_t scaling_factor, mpz_t modulo_0)
 {
     uint8_t max_cell = 0;
     float max = 0;
     // Decrypting vector
     complex_matrix_t *basis_matrix_etoile = sigma_basis_tilde_etoile_init(POL_DEGREE);
+    fprintf(stdout, "Decrypted decoded vector : \n");
     for (uint8_t i = 0; i < NB_CLASSES; i++)
     {
         encoded_polynomial_t *decrypted_cell = encoded_pol_init(POL_DEGREE);
         ciphered_t *ciphered_cell = ciphered_matrix_get(c, i, 0);
-        if (verbose == 1)
-        {
-            printf("Encrypted cell %d : ", i);
-        }
+
         decrypt_in_place(decrypted_cell, ciphered_cell, secret_key, modulo_0, scaling_factor); // Modulo_0 is the minimum modulo level reached and chosen at the beginning
-        if (verbose == 1)
-        {
-            printf("Decrypted cell %d : ", i);
-        }
+
         float recovered_value = float_decode(decrypted_cell, basis_matrix_etoile, precision_factor); // precision factor has been increased with mult before
-        if (verbose == 1)
-        {
-            printf("Decoded cell %i : %f", i, recovered_value);
-        }
+        fprintf(stdout, " %f ", recovered_value);
         if (recovered_value > max)
         {
             max = recovered_value;
             max_cell = i; // prediction
         }
+        encoded_pol_free(decrypted_cell);
     }
+    complex_matrix_free(basis_matrix_etoile);
+
     return max_cell;
 }
 
@@ -440,8 +484,6 @@ void encryption_parameters_init(mpz_t precision_factor, mpz_t scaling_factor, mp
 
     mpz_init(modulo_full);
     mpz_ui_pow_ui(modulo_full, 2, MODULO_0_BIT_SIZE + (SCALING_FACTOR_BIT_SIZE * MULTIPLICATIVE_LEVEL_MAX)); // modulo_full = modulo_0 * scaling_factor^L, where L is the maximum multiplicative level, this number is huge.
-
-    
 }
 
 void encryption_parameters_clear(mpz_t precision_factor, mpz_t scaling_factor, mpz_t modulo_0, mpz_t modulo_full)
@@ -452,9 +494,9 @@ void encryption_parameters_clear(mpz_t precision_factor, mpz_t scaling_factor, m
     mpz_clear(modulo_full);
 }
 
-uint8_t predict_image_private(dataset_t *test_dataset, const nn_parameters_t *parameters, polynomial_t *secret_key, int verbose, gmp_randstate_t state)
+uint8_t *predict_image_private(dataset_t *test_dataset, const nn_parameters_t *parameters, polynomial_t *secret_key, gmp_randstate_t state)
 {
-
+    uint8_t *prediction = malloc(2 * sizeof(uint8_t));
     // Selecting one image
     image_t *original_image = test_dataset->images; // Keep address of the images array
     size_t original_size = test_dataset->size;
@@ -463,6 +505,12 @@ uint8_t predict_image_private(dataset_t *test_dataset, const nn_parameters_t *pa
     test_dataset->size = 1;
     fprintf(stdout, "Image picked : \n");
     image_print(&test_dataset->images[0], stdout);
+
+    // adding true label to prediction
+    prediction[0] = test_dataset->images[0].label;
+
+    fprintf(stdout, "RAW Image : \n");
+    image_raw_print(&test_dataset->images[0], stdout);
 
     // parameters init
     mpz_t precision_factor;
@@ -478,24 +526,42 @@ uint8_t predict_image_private(dataset_t *test_dataset, const nn_parameters_t *pa
     ciphered_t *precomputed_evk_g = precompute_evk_g(secret_key, modulo_full, g, state, scaling_factor);
 
     // Encrypting
-    ciphered_matrix_t *encrypted_image = encrypt_image(test_dataset->images[0], secret_key, verbose, precision_factor, scaling_factor, modulo_full, state);
+    ciphered_matrix_t *encrypted_image = encrypt_image(test_dataset->images[0], secret_key, precision_factor, scaling_factor, modulo_full, state);
 
     // Feed forward
+    fprintf(stdout, "Prediction using encoded ciphered image...\n");
     ciphered_matrix_t *ciphered_prediction = ciphered_feed_forward(encrypted_image, parameters, precomputed_evk_g, g, modulo_full, scaling_factor, precision_factor);
 
-    //Decrypting prediction
+    // Decrypting prediction
     mpz_t updated_precision_factor;
     mpz_init_set(updated_precision_factor, precision_factor);
-    mpz_pow_ui(precision_factor, precision_factor, MULTIPLICATIVE_LEVEL_MAX); //Each ciphered has been multiplied 3 times i.e the precision factor during decoding is precision_factor^3 
-    uint8_t pred = decrypt_prediction(ciphered_prediction, secret_key, verbose, updated_precision_factor, scaling_factor, modulo_0);
+    mpz_pow_ui(updated_precision_factor, precision_factor, MULTIPLICATIVE_LEVEL_MAX + 2); // during cipher the precision_factor becomes precision_factor ^ 5
+    fprintf(stdout, "Ciphered decoded prediction : \n");
+    decoded_ciphered_matrix_print(ciphered_prediction, stdout, updated_precision_factor);
+
+    // adding predicted label
+    prediction[1] = decrypt_prediction(ciphered_prediction, secret_key, updated_precision_factor, scaling_factor, modulo_0);
 
     encryption_parameters_clear(precision_factor, scaling_factor, modulo_0, modulo_full);
     cipher_free(precomputed_evk_g);
     ciphered_matrix_free(encrypted_image);
     ciphered_matrix_free(ciphered_prediction);
     mpz_clear(updated_precision_factor);
+    mpz_clear(g);
+
+    // Comparing with the output without ciphering
+    // forward_matrix_t output;
+    // uint8_t *prediction = (malloc(sizeof(uint8_t)));
+
+    // output.vectors = malloc(sizeof(forward_vector_t));
+
+    // feed_forward(&output, parameters, test_dataset);
+
+    // *prediction = get_prediction(output.vectors[0]);
+    // free(output.vectors);
+    // free(prediction);
 
     test_dataset->images = original_image;
     test_dataset->size = original_size;
-    return pred;
+    return prediction;
 }

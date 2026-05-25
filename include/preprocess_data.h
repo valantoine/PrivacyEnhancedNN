@@ -27,6 +27,9 @@ typedef struct{
 } dataset_t;
 
 
+
+void image_raw_print(image_t *image, FILE *fd);
+
 extern void image_print(image_t *image, FILE *fd);
 
 extern dataset_t *dataset_read(const char *images, const char *labels, size_t size);

@@ -54,7 +54,6 @@ complex_matrix_t *anti_identity_init(size_t size)
                 complex_matrix_set(anti_I_n, i, j, 0);
             }
         }
-        fprintf(stdout, "\n ");
     }
     return anti_I_n;
 }

@@ -125,10 +125,11 @@ void cipher_copy_B(ciphered_t *c, encoded_polynomial_t *B_to_copy)
 
 void cipher_print(ciphered_t *c)
 {
-    fprintf(stdout, "Ciphered : \n A = ");
+    printf("(");
     polynomial_print(c->A);
-    fprintf(stdout, "B = ");
+    printf(", ");
     encoded_polynomial_print(c->B);
+    printf(")");
 }
 
 // Modulo needs to be way bigger
@@ -317,6 +318,4 @@ void decrypt_in_place(encoded_polynomial_t *decrypted, ciphered_t *cipher, polyn
 
     encoded_pol_scalar_div_exact(decrypted, scaling_factor);
     polynomial_free(prod);
-
-
 }

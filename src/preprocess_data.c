@@ -218,6 +218,21 @@ void image_print(image_t *image, FILE *fd)
     fprintf(fd, "\n");
 }
 
+void image_raw_print(image_t *image, FILE *fd)
+{
+    fprintf(fd, "Label : %d\n", image->label);
+    for (int j = 0; j < IMAGE_SIZE; j++)
+    {
+        if (j % IMAGE_HEIGHT == 0)
+        {
+            fprintf(fd, "\n");
+        }
+
+        fprintf(fd, " %f ", image->image[j]);
+    }
+    fprintf(fd, "\n");
+}
+
 void dataset_shuffle(dataset_t *dataset)
 {
     if (dataset->size > 1)

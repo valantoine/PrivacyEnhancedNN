@@ -82,7 +82,7 @@ user_parameters_t *parser_io(int argc, char *argv[])
             user_parameters->mode = PREDICT_MODE;
             break;
         case 'n':
-            user_parameters->predict_number = (uint8_t)strtol(optarg, NULL, 10);
+            user_parameters->predict_number = (uint16_t)strtol(optarg, NULL, 10);
             break;
         case 'i':
             if (user_parameters->input_parameters != NULL)

@@ -53,4 +53,7 @@ extern float accuracy(const dataset_t *dataset, const forward_matrix_t *output);
 
 extern uint8_t *predict_image(dataset_t *test_dataset, const nn_parameters_t *parameters);
 
+extern uint8_t get_prediction(const forward_vector_t output_vector);
+
+
 #endif /*NEURALNETWORK_H*/

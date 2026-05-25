@@ -46,7 +46,7 @@ void polynomial_init_in_place(polynomial_t *pol, size_t size)
     }
     for (size_t i = 0; i < size; i++)
     {
-        mpz_init(pol->coeffs[i]); //bored to error handling this
+        mpz_init(pol->coeffs[i]); // bored to error handling this
     }
     pol->degree = size;
     return;
@@ -64,11 +64,11 @@ void polynomial_free(polynomial_t *pol)
 
 void polynomial_print(polynomial_t *pol)
 {
-    for (size_t i = 0; i < pol->degree; i++)
+    for (size_t i = 0; i < pol->degree - 1; i++)
     {
         gmp_printf("%Zd *X^%zu + ", pol->coeffs[i], i);
     }
-    fprintf(stdout, "\n");
+    gmp_printf("%Zd *X^%zu", pol->coeffs[pol->degree - 1], pol->degree - 1);
 }
 
 void encoded_pol_add(encoded_polynomial_t *pol1, const encoded_polynomial_t *pol2)
