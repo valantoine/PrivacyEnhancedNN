@@ -229,14 +229,14 @@ void output_vector_print(const forward_vector_t output_vector)
 uint8_t get_prediction(const forward_vector_t output_vector)
 {
     float max = output_vector.A2[0];
-    fprintf(stdout, "Output vector before softmax (used to compare with privacy mode) :\n");
-    fprintf(stdout, " %f ", output_vector.Z2[0]);
+    // fprintf(stdout, "Output vector before softmax (used to compare with privacy mode) :\n");
+    // fprintf(stdout, " %f ", output_vector.Z2[0]);
     // output_vector_print(output_vector);
     uint8_t index = 0;
 
     for (int i = 1; i < NB_CLASSES; i++)
     {
-        fprintf(stdout, " %f ", output_vector.Z2[i]);
+        // fprintf(stdout, " %f ", output_vector.Z2[i]);
         if (output_vector.A2[i] > max)
         {
             max = output_vector.A2[i];

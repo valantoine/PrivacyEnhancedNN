@@ -474,9 +474,9 @@ void tst_mult_consec()
     mpz_t encoding_precision_factor;
     mpz_init_set_ui(encoding_precision_factor, 128); // precision factor
     mpz_t scaling_factor;
-    mpz_init_set_ui(scaling_factor, 1073741824); // delta 2^30;
+    mpz_init_set_ui(scaling_factor, 2); // delta 2^30;
     mpz_t modulo;
-    mpz_init_set_ui(modulo, INT64_MAX);
+    mpz_init_set_ui(modulo, INT32_MAX);
     mpz_mul(modulo, modulo, scaling_factor); // Q = INT_MAX * scaling_factor
     mpz_mul(modulo, modulo, scaling_factor); // Q = INT_MAX * scaling_factor^2
     complex_vector_t *complex_vector1 = complex_vector_init(size);

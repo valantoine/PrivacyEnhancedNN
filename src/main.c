@@ -4,6 +4,7 @@
 int main(int argc, char *argv[])
 {
     srand(time(NULL));
+    // tst_mult_consec();
     gmp_randstate_t state;
     gmp_randinit_mt(state);
     gmp_randseed_ui(state, time(NULL));
@@ -12,22 +13,21 @@ int main(int argc, char *argv[])
     {
         return 0;
     }
-    dataset_t *train_dataset = dataset_read(IMAGES_TRAIN_PATH, LABELS_TRAIN_PATH, TRAIN_SIZE);
-    if (train_dataset == NULL)
-    {
-        parameters_free(user_parameters);
-
-        return 0;
-    }
     dataset_t *test_dataset = dataset_read(IMAGES_TEST_PATH, LABELS_TEST_PATH, TEST_SIZE);
     if (test_dataset == NULL)
     {
         parameters_free(user_parameters);
-        dataset_free(train_dataset);
         return 0;
     }
     if (user_parameters->mode == TRAINING_MODE)
     {
+        dataset_t *train_dataset = dataset_read(IMAGES_TRAIN_PATH, LABELS_TRAIN_PATH, TRAIN_SIZE);
+        if (train_dataset == NULL)
+        {
+            parameters_free(user_parameters);
+
+            return 0;
+        }
         nn_parameters_t *parameters = train(train_dataset);
         if (parameters == NULL)
         {
@@ -44,6 +44,7 @@ int main(int argc, char *argv[])
             free(parameters);
             return 0;
         }
+        dataset_free(train_dataset);
     }
     if (user_parameters->mode == PREDICT_MODE)
     {
@@ -51,7 +52,6 @@ int main(int argc, char *argv[])
         nn_parameters_t *parameters = nn_parameters_get(user_parameters->input_parameters);
         if (parameters == NULL)
         {
-            dataset_free(train_dataset);
             dataset_free(test_dataset);
             free(user_parameters);
             return 0;
@@ -87,7 +87,6 @@ int main(int argc, char *argv[])
                 uint8_t *prediction = predict_image(test_dataset, parameters);
                 if (prediction == NULL)
                 {
-                    dataset_free(train_dataset);
                     dataset_free(test_dataset);
                     free(parameters);
                     free(user_parameters);
@@ -108,7 +107,6 @@ int main(int argc, char *argv[])
         fprintf(stdout, "Exec time for %u predictions : %f\n", user_parameters->predict_number, timeElapsed);
         free(parameters);
     }
-    dataset_free(train_dataset);
     dataset_free(test_dataset);
     free(user_parameters);
     gmp_randclear(state);

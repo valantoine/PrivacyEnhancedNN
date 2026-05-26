@@ -129,15 +129,15 @@ void ciphered_matrix_set(ciphered_matrix_t *mat, size_t i, size_t j, ciphered_t 
     }
 
     // Copy A
-    for (size_t k = 0; k < c->B->size; k++)
+    for (size_t k = 0; k < c->A->degree; k++)
     {
-        mpz_set(mat->ciphered_matrix[i].A->coeffs[k], c->A->coeffs[k]);
+        mpz_set(mat->ciphered_matrix[i * mat->col_size + j].A->coeffs[k], c->A->coeffs[k]);
     }
 
     // Copy B
     for (size_t k = 0; k < c->B->size; k++)
     {
-        mpz_set(mat->ciphered_matrix[i].B->coeffs[k], c->B->coeffs[k]);
+        mpz_set(mat->ciphered_matrix[i * mat->col_size + j].B->coeffs[k], c->B->coeffs[k]);
     }
 }
 
@@ -194,7 +194,7 @@ void decoded_ciphered_matrix_print(ciphered_matrix_t *m, FILE *fd, mpz_t precisi
 
 ciphered_matrix_t *encrypt_image(image_t image, polynomial_t *secret_key, mpz_t precision_factor, mpz_t scaling_factor, mpz_t modulo_full, gmp_randstate_t state)
 {
-    ciphered_matrix_t *c = ciphered_matrix_init(IMAGE_SIZE, 1); // Vector of size 728
+    ciphered_matrix_t *c = ciphered_matrix_init(IMAGE_SIZE, 1); // Vector of size 784
     if (c == NULL)
     {
         return NULL;
@@ -408,9 +408,9 @@ ciphered_matrix_t *ciphered_feed_forward(ciphered_matrix_t *input, const nn_para
         {
             ciphered_t *cipher_cell_X = ciphered_matrix_get(input, k, 0);                                                    // Image[k]
             encoded_polynomial_t *encoded_cell_W1 = encoded_matrix_get(W1_ec, j, k);                                         // W1[j][k]
-            ciphered_t *W1_times_X = ckks_mult_cipher_plain(cipher_cell_X, encoded_cell_W1, current_modulo, scaling_factor); // Image[k] * W1[j][k]
-            ciphered_t *A1_cell = ciphered_matrix_get(A1, j, 0);                                                             // A1[j]
-            ckks_add_cipher_cipher(A1_cell, A1_cell, W1_times_X, current_modulo_down);                                       // A1[j] = A1[j] + Image[k] * W1[j][k]
+            ciphered_t *W1_times_X = ckks_mult_cipher_plain(cipher_cell_X, encoded_cell_W1, current_modulo, scaling_factor); // Image[k] * W1[j][k] mod Q_L
+            ciphered_t *A1_cell = ciphered_matrix_get(A1, j, 0);                                                             // A1[j] mod Q_{L-1}
+            ckks_add_cipher_cipher(A1_cell, A1_cell, W1_times_X, current_modulo_down);                                       // A1[j] = A1[j] + Image[k] * W1[j][k] mod Q_{L-1}
             cipher_free(W1_times_X);
         }
     }

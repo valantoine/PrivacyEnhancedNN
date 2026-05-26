@@ -4,9 +4,9 @@
 
 #define POL_DEGREE 4 // The cylotomic polynomial degree
 #define MULTIPLICATIVE_LEVEL_MAX 3 //i.e we can do 3 homomorphic multiplications (fitted for the network)
-#define PRECISION_VALUE 2048
-#define SCALING_FACTOR_BIT_SIZE 20
-#define MODULO_0_BIT_SIZE 150  //Must be way bigger than scaling_factor_size
+#define PRECISION_VALUE 512
+#define SCALING_FACTOR_BIT_SIZE 2
+#define MODULO_0_BIT_SIZE 110  //Must be way bigger than scaling_factor_size
 
 
 
