@@ -239,12 +239,26 @@ ciphered_matrix_t *encrypt_image(image_t image, polynomial_t *secret_key, mpz_t 
 
 uint8_t decrypt_prediction(ciphered_matrix_t *c, polynomial_t *secret_key, mpz_t precision_factor, mpz_t scaling_factor, mpz_t modulo_0)
 {
-    uint8_t max_cell = 0;
-    float max = 0;
-    // Decrypting vector
     complex_matrix_t *basis_matrix_etoile = sigma_basis_tilde_etoile_init(POL_DEGREE);
+    
+    // assign the first decrypted cell to the max
+    encoded_polynomial_t *decrypted_cell = encoded_pol_init(POL_DEGREE);
+    ciphered_t *ciphered_cell = ciphered_matrix_get(c, 0, 0);
+
+    decrypt_in_place(decrypted_cell, ciphered_cell, secret_key, modulo_0, scaling_factor); // Modulo_0 is the minimum modulo level reached and chosen at the beginning
+
+    float recovered_value = float_decode(decrypted_cell, basis_matrix_etoile, precision_factor); // precision factor has been increased with mult before
+    fprintf(stdout, " %f ", recovered_value);
+
+    float max = recovered_value;
+    uint8_t max_cell = 0; // prediction
+
+    encoded_pol_free(decrypted_cell);
+
+    // Decrypting vector
+
     fprintf(stdout, "Decrypted decoded vector : \n");
-    for (uint8_t i = 0; i < NB_CLASSES; i++)
+    for (uint8_t i = 1; i < NB_CLASSES; i++)
     {
         encoded_polynomial_t *decrypted_cell = encoded_pol_init(POL_DEGREE);
         ciphered_t *ciphered_cell = ciphered_matrix_get(c, i, 0);
@@ -503,7 +517,7 @@ uint8_t *predict_image_private(dataset_t *test_dataset, const nn_parameters_t *p
     int random_image_index = rand() % TEST_SIZE; // Pick a random number
     test_dataset->images = original_image + random_image_index;
     test_dataset->size = 1;
-    fprintf(stdout, "Image picked : \n");
+    fprintf(stdout, "\nImage picked : \n");
     image_print(&test_dataset->images[0], stdout);
 
     // adding true label to prediction

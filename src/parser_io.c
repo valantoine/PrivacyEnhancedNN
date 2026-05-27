@@ -10,8 +10,8 @@ void print_help()
     fprintf(stdout, "DESCRIPTIION\n\n");
     fprintf(stdout, "Implementation of a Privacy Enhanced Neural Network using MNIST dataset and FHE scheme\n\n");
     fprintf(stdout, "OPTIONS\n\n");
-    fprintf(stdout, "-b, --benchmark              (OPTIONAL) run the program in benchmark mode to measure time of execution \n");
-    fprintf(stdout, "-e, --encrypted              (OPTIONAL) run the program in privacy mode\n");
+    fprintf(stdout, "-b, --benchmark              (OPTIONAL) run the program in benchmark mode to measure time of execution (NOT IMPLEMENTED) \n");
+    fprintf(stdout, "-e, --encrypted              (OPTIONAL) run the program in privacy mode ONLY FOR PREDICTION\n");
     fprintf(stdout, "-t, --train                  train the neural network using the MNIST dataset \n");
     fprintf(stdout, "-p , --predict               Predict N random image picked from the MNIST test dataset using a given parameter file \n");
     fprintf(stdout, "-i FILE, --input FILE        input parameters file. In case of training --> write trained parameters in this file | In case of predict --> use parameters in this file to predict\n");

@@ -181,7 +181,6 @@ ciphered_t *ckks_mult_cipher_cipher(ciphered_t *c1, ciphered_t *c2, mpz_t modulo
     }
 
     // Relinearization
-    // Peut être mettre des modulo après
     //  D2 * evk_g.A
     polynomial_t *D2_A_prod = polynomial_mult_modulo(D2, evk_g_precomputed->A, g_times_q);
     if (D2_A_prod == NULL)
